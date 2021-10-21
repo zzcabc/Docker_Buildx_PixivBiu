@@ -1,6 +1,6 @@
 FROM python:3.7.12
 WORKDIR /PixivBiu
-RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' >/etc/timezone \
+RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' >/etc/timezone && \
     apt update && \
     apt install git && \
     cd PixivBiu && \

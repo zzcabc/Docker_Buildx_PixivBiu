@@ -17,7 +17,7 @@ on:
 
 
 jobs:
-  Buildx_Danmuji_Docker:
+  Buildx_PixivBiu_Docker:
     # 运行在Ubuntu系统上
     runs-on: ubuntu-latest
     # 步骤
