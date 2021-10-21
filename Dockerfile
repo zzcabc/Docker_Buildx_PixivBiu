@@ -8,5 +8,5 @@ RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' 
     pip install -r requirements.txt 
 WORKDIR PixivBiu
 EXPOSE 4001
-VOLUME /PixivBiu/config.yml /PixivBiu/downloads /PixivBiu/usr
+VOLUME /PixivBiu/config.yml /PixivBiu/downloads /PixivBiu/usr/.token.json
 ENTRYPOINT ["python","main.py"]
