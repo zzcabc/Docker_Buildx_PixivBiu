@@ -30,9 +30,9 @@ jobs:
         # TAG_VERSION ： 标签版本
         # TAG_LATEST ： 最新版本
         run: |
-          IMAGE_NAME=pixivBiu
+          IMAGE_NAME=pixivbiu
           VERSION=$(curl -sX GET "https://api.github.com/repos/txperl/PixivBiu/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]')
-          DOCKERHUB_VERSION=$(curl -sX GET "https://hub.docker.com/v2/repositories/zzcabc/pixivBiu/tags" | awk '{print $320;exit}' FS='[""]')
+          DOCKERHUB_VERSION=$(curl -sX GET "https://hub.docker.com/v2/repositories/zzcabc/pixivbiu/tags" | awk '{print $320;exit}' FS='[""]')
           TAG_VERSION="${{ secrets.DOCKERHUB_USERNAME }}/${IMAGE_NAME}:${VERSION}"
           TAG_LATEST="${{ secrets.DOCKERHUB_USERNAME }}/${IMAGE_NAME}:latest"
           echo ::set-output name=image_name::${IMAGE_NAME}
