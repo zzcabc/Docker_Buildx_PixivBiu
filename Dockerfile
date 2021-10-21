@@ -4,6 +4,7 @@ RUN cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' 
     apt install git && \
     git clone https://github.com/txperl/PixivBiu.git && \
     /usr/local/bin/python -m pip install --upgrade pip && \
+    cd /PixivBiu
     pip install -r requirements.txt 
 WORKDIR PixivBiu
 EXPOSE 4001
