@@ -1,0 +1,27 @@
+FROM python:3.7.12-alpine3.14
+RUN apk add --no-cache jq findutils tzdata git gcc libc-dev linux-headers jpeg-dev zlib-dev && \
+    curl -fsSL git.io/aria2c.sh | bash && \
+    git clone --depth=1 https://github.com/txperl/PixivBiu.git && \
+    cd /PixivBiu && \
+    rm config.yml && \
+    pip install -r requirements.txt && \
+    apk del tzdata git libc-dev linux-headers && \
+    rm -rf /var/cache/apk/* && \
+    rm -rf /root/.cache && \
+    rm -rf /tmp/*
+COPY rootfs /
+ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=1 \
+    RCLONE_CONFIG=/config/rclone.conf \
+    UPDATE_TRACKERS=true \
+    CUSTOM_TRACKER_URL= \
+    LISTEN_PORT=6888 \
+    RPC_PORT=6800 \
+    RPC_SECRET= \
+    PUID= PGID= \
+    DISK_CACHE= \
+    IPV6_MODE= \
+    UMASK_SET= \
+    SPECIAL_MODE=
+EXPOSE 4001 6800 6888 6888/udp
+VOLUME /PixivBiu/downloads /PixivBiu/config.yml /PixivBiu/usr/.token.json /config /downloads
+ENTRYPOINT ["python","main.py"]
