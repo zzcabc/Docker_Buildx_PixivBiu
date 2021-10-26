@@ -10,7 +10,7 @@
 
 使用GitHub Action中国时间 **0:00** 自动拉取[txperl/PixivBiu](https://github.com/txperl/PixivBiu)的源码进行构建Docker镜像，**但当源码版本和Docker镜像版本一致将不会构建镜像**，由源码构建时间大概45分钟
 
-**使用方式**
+# 使用方式
 
 在启动镜像之前，你需要准备config.yml配置文件以及.token.json的用户登录token
 
@@ -28,7 +28,7 @@ docker run -d \
     zzcabc/pixivbiu:latest
 ```
 
-**映射路径说明** 
+# 映射路径说明
 
 此说明对应Docker容器内
 
