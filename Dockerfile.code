@@ -6,9 +6,7 @@ RUN apk add -U --no-cache jq findutils tzdata git gcc libc-dev linux-headers jpe
     rm config.yml && \
     pip install -r requirements.txt && \
     apk del tzdata git libc-dev linux-headers && \
-    rm -rf /var/cache/apk/* && \
-    rm -rf /root/.cache && \
-    rm -rf /tmp/*
+    rm -rf /var/cache/apk/* /root/.cache /tmp/*
 COPY rootfs /
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=1 \
     RCLONE_CONFIG=/config/rclone.conf \
