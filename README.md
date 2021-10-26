@@ -16,7 +16,7 @@
 
 将本项目的config.yml直接可用
 
-[点击查看token的获取方式]()
+[点击查看token的获取方式](https://github.com/zzcabc/Docker_Buildx_PixivBiu/blob/main/getToken.md)
 
 ```sh
 docker run -d \
