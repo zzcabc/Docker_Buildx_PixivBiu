@@ -2,6 +2,7 @@
 
 
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/txperl/PixivBiu?label=PixivBiu&style=flat-square)](https://github.com/txperl/PixivBiu/releases/latest) [![Docker Image Version (latest by date)](https://img.shields.io/docker/v/zzcabc/pixivbiu?label=DockerHub&style=flat-square)](https://hub.docker.com/r/zzcabc/pixivbiu/tags?page=1&ordering=last_updated)
+
 ### 如果你发现上面图标版本不一致，请点击一下star，这样会触发自动构建镜像，即使你之后取消star
 
 
