@@ -61,93 +61,196 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      # 构建 Armv7 框架镜像
-      - name: Build linux/arm/v7
-        # if: ${{ steps.prepare.outputs.dockerhub_version != steps.prepare.outputs.build_args }}
+      # 构建 386 框架镜像
+      - name: Build linux/386
+        if: ${{ steps.prepare.outputs.dockerhub_version != steps.prepare.outputs.build_args }}
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: ./Dockerfile
-          platforms: linux/arm/v7
+          file: ./Dockerfile.code
+          platforms: linux/386
           push: true
           build-args: ${{ steps.prepare.outputs.build_args }}
-          tags: ${{ steps.prepare.outputs.tag_version }}-arm32v7,${{ steps.prepare.outputs.tag_latest }}-arm32v7
-      # 构建 Arm64 框架镜像
-      - name: Build linux/arm/v8
-        # if: ${{ steps.prepare.outputs.dockerhub_version != steps.prepare.outputs.build_args }}
-        uses: docker/build-push-action@v2
-        with:
-          context: .
-          file: ./Dockerfile
-          platforms: linux/arm64
-          push: true
-          build-args: ${{ steps.prepare.outputs.build_args }}
-          tags: ${{ steps.prepare.outputs.tag_version }}-arm64v8,${{ steps.prepare.outputs.tag_latest }}-arm64v8
+          tags: ${{ steps.prepare.outputs.tag_version }}-386,${{ steps.prepare.outputs.tag_latest }}-386
       # 构建 Amd64 框架镜像
       - name: Build linux/amd64
-        # if: ${{ steps.prepare.outputs.dockerhub_version != steps.prepare.outputs.build_args }}
+        if: ${{ steps.prepare.outputs.dockerhub_version != steps.prepare.outputs.build_args }}
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: ./Dockerfile
+          file: ./Dockerfile.code
           platforms: linux/amd64
           push: true
           build-args: ${{ steps.prepare.outputs.build_args }}
-          tags: ${{ steps.prepare.outputs.tag_version }}-amd64,${{ steps.prepare.outputs.tag_latest }}-amd64
+          tags: ${{ steps.prepare.outputs.tag_version }}-amd64,${{ steps.prepare.outputs.tag_latest }}-amd64   
+      # 构建 armv6 框架镜像
+      - name: Build linux/arm/v6
+        if: ${{ steps.prepare.outputs.dockerhub_version != steps.prepare.outputs.build_args }}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile.code
+          platforms: linux/arm/v6
+          push: true
+          build-args: ${{ steps.prepare.outputs.build_args }}
+          tags: ${{ steps.prepare.outputs.tag_version }}-armv6,${{ steps.prepare.outputs.tag_latest }}-armv6
+      # 构建 Armv7 框架镜像
+      - name: Build linux/arm/v7
+        if: ${{ steps.prepare.outputs.dockerhub_version != steps.prepare.outputs.build_args }}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile.code
+          platforms: linux/arm/v7
+          push: true
+          build-args: ${{ steps.prepare.outputs.build_args }}
+          tags: ${{ steps.prepare.outputs.tag_version }}-armv7,${{ steps.prepare.outputs.tag_latest }}-armv7
+      # 构建 Armv8 框架镜像
+      - name: Build linux/arm/v8
+        if: ${{ steps.prepare.outputs.dockerhub_version != steps.prepare.outputs.build_args }}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile.code
+          platforms: linux/arm64
+          push: true
+          build-args: ${{ steps.prepare.outputs.build_args }}
+          tags: ${{ steps.prepare.outputs.tag_version }}-armv8,${{ steps.prepare.outputs.tag_latest }}-armv8
+      # 构建 ppc64le 框架镜像
+      - name: Build linux/ppc64le
+        if: ${{ steps.prepare.outputs.dockerhub_version != steps.prepare.outputs.build_args }}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile.code
+          platforms: linux/ppc64le
+          push: true
+          build-args: ${{ steps.prepare.outputs.build_args }}
+          tags: ${{ steps.prepare.outputs.tag_version }}-ppc64le,${{ steps.prepare.outputs.tag_latest }}-ppc64le
+      # 构建 s390x 框架镜像
+      - name: Build linux/s390x
+        if: ${{ steps.prepare.outputs.dockerhub_version != steps.prepare.outputs.build_args }}
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./Dockerfile.code
+          platforms: linux/s390x
+          push: true
+          build-args: ${{ steps.prepare.outputs.build_args }}
+          tags: ${{ steps.prepare.outputs.tag_version }}-s390x,${{ steps.prepare.outputs.tag_latest }}-s390x
       #创建并推送多架构镜像
       - name: Create and push manifest lists
-        # if: ${{ steps.prepare.outputs.dockerhub_version != steps.prepare.outputs.build_args }}
+        if: ${{ steps.prepare.outputs.dockerhub_version != steps.prepare.outputs.build_args }}
         run: |
           docker manifest create -a ${{ steps.prepare.outputs.tag_version }} \
-              ${{ steps.prepare.outputs.tag_version }}-amd64 \
-              ${{ steps.prepare.outputs.tag_version }}-arm64v8 \
-              ${{ steps.prepare.outputs.tag_version }}-arm32v7
+              ${{ steps.prepare.outputs.tag_version }}-386          \
+              ${{ steps.prepare.outputs.tag_version }}-amd64        \
+              ${{ steps.prepare.outputs.tag_version }}-armv6        \
+              ${{ steps.prepare.outputs.tag_version }}-armv7        \
+              ${{ steps.prepare.outputs.tag_version }}-armv8        \
+              ${{ steps.prepare.outputs.tag_version }}-ppc64le      \
+              ${{ steps.prepare.outputs.tag_version }}-s390x        
           
+          docker manifest annotate ${{ steps.prepare.outputs.tag_version }}  \
+              ${{ steps.prepare.outputs.tag_version }}-386 \
+              --arch=386 \
+              --os=linux  \
+              --os-version=python:3.7.12-alpine3.14
+
           docker manifest annotate ${{ steps.prepare.outputs.tag_version }} \
               ${{ steps.prepare.outputs.tag_version }}-amd64 \
               --arch=amd64 \
               --os=linux  \
-              --os-version=python:3.7.12
+              --os-version=python:3.7.12-alpine3.14
           
           docker manifest annotate ${{ steps.prepare.outputs.tag_version }} \
-              ${{ steps.prepare.outputs.tag_version }}-arm64v8 \
-              --arch=arm64 \
+              ${{ steps.prepare.outputs.tag_version }}-armv6  \
+              --arch=arm  \
               --os=linux  \
-              --variant=v8 \
-              --os-version=python:3.7.12
+              --variant=v6 \
+              --os-version=python:3.7.12-alpine3.14
           
           docker manifest annotate ${{ steps.prepare.outputs.tag_version }} \
-              ${{ steps.prepare.outputs.tag_version }}-arm32v7 \
-              --arch=arm \
+              ${{ steps.prepare.outputs.tag_version }}-armv7  \
+              --arch=arm  \
               --os=linux  \
               --variant=v7 \
-              --os-version=python:3.7.12
-          
+              --os-version=python:3.7.12-alpine3.14
+
+          docker manifest annotate ${{ steps.prepare.outputs.tag_version }} \
+              ${{ steps.prepare.outputs.tag_version }}-armv8  \
+              --arch=arm64  \
+              --os=linux  \
+              --variant=v8 \
+              --os-version=python:3.7.12-alpine3.14
+
+          docker manifest annotate ${{ steps.prepare.outputs.tag_version }} \
+              ${{ steps.prepare.outputs.tag_version }}-ppc64le \
+              --arch=ppc64le  \
+              --os=linux  \
+              --os-version=python:3.7.12-alpine3.14
+
+          docker manifest annotate ${{ steps.prepare.outputs.tag_version }} \
+              ${{ steps.prepare.outputs.tag_version }}-s390x \
+              --arch=s390x  \
+              --os=linux  \
+              --os-version=python:3.7.12-alpine3.14
+
           docker manifest push ${{ steps.prepare.outputs.tag_version }}
+
           
           docker manifest create -a ${{ steps.prepare.outputs.tag_latest }} \
-              ${{ steps.prepare.outputs.tag_latest }}-amd64 \
-              ${{ steps.prepare.outputs.tag_latest }}-arm64v8 \
-              ${{ steps.prepare.outputs.tag_latest }}-arm32v7
+              ${{ steps.prepare.outputs.tag_latest }}-386          \
+              ${{ steps.prepare.outputs.tag_latest }}-amd64        \
+              ${{ steps.prepare.outputs.tag_latest }}-armv6        \
+              ${{ steps.prepare.outputs.tag_latest }}-armv7        \
+              ${{ steps.prepare.outputs.tag_latest }}-armv8        \
+              ${{ steps.prepare.outputs.tag_latest }}-ppc64le      \
+              ${{ steps.prepare.outputs.tag_latest }}-s390x        
           
+          docker manifest annotate ${{ steps.prepare.outputs.tag_latest }}  \
+              ${{ steps.prepare.outputs.tag_latest }}-386 \
+              --arch=386 \
+              --os=linux  \
+              --os-version=python:3.7.12-alpine3.14
+
           docker manifest annotate ${{ steps.prepare.outputs.tag_latest }} \
               ${{ steps.prepare.outputs.tag_latest }}-amd64 \
               --arch=amd64 \
               --os=linux  \
-              --os-version=python:3.7.12
+              --os-version=python:3.7.12-alpine3.14
           
           docker manifest annotate ${{ steps.prepare.outputs.tag_latest }} \
-              ${{ steps.prepare.outputs.tag_latest }}-arm64v8 \
-              --arch=arm64 \
+              ${{ steps.prepare.outputs.tag_latest }}-armv6  \
+              --arch=arm  \
               --os=linux  \
-              --variant=v8 \
-              --os-version=python:3.7.12
+              --variant=v6 \
+              --os-version=python:3.7.12-alpine3.14
           
           docker manifest annotate ${{ steps.prepare.outputs.tag_latest }} \
-              ${{ steps.prepare.outputs.tag_latest }}-arm32v7 \
-              --arch=arm \
+              ${{ steps.prepare.outputs.tag_latest }}-armv7  \
+              --arch=arm  \
               --os=linux  \
               --variant=v7 \
-              --os-version=python:3.7.12
-          
+              --os-version=python:3.7.12-alpine3.14
+
+          docker manifest annotate ${{ steps.prepare.outputs.tag_latest }} \
+              ${{ steps.prepare.outputs.tag_latest }}-armv8  \
+              --arch=arm64  \
+              --os=linux  \
+              --variant=v8 \
+              --os-version=python:3.7.12-alpine3.14
+
+          docker manifest annotate ${{ steps.prepare.outputs.tag_latest }} \
+              ${{ steps.prepare.outputs.tag_latest }}-ppc64le \
+              --arch=ppc64le  \
+              --os=linux  \
+              --os-version=python:3.7.12-alpine3.14
+
+          docker manifest annotate ${{ steps.prepare.outputs.tag_latest }} \
+              ${{ steps.prepare.outputs.tag_latest }}-s390x \
+              --arch=s390x  \
+              --os=linux  \
+              --os-version=python:3.7.12-alpine3.14
+
           docker manifest push ${{ steps.prepare.outputs.tag_latest }}
