@@ -130,7 +130,7 @@ jobs:
           
           docker manifest annotate ${{ steps.prepare.outputs.tag_version }} \
               ${{ steps.prepare.outputs.tag_version }}-arm32v7  \
-              --arch=arm32  \
+              --arch=arm  \
               --os=linux  \
               --variant=v7 \
               --os-version=python:3.7.12-alpine3.14
@@ -166,7 +166,7 @@ jobs:
           
           docker manifest annotate ${{ steps.prepare.outputs.tag_latest }} \
               ${{ steps.prepare.outputs.tag_latest }}-arm32v7  \
-              --arch=arm32  \
+              --arch=arm  \
               --os=linux  \
               --variant=v7 \
               --os-version=python:3.7.12-alpine3.14
