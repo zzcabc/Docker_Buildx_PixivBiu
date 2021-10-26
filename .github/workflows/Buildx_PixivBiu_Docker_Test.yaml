@@ -2,12 +2,12 @@
 name: Buildx_PixivBiu_Docker_Test
 
 on:
-  # master分支的push操作会触发当前脚本的执行
+  # main分支的push操作会触发当前脚本的执行
   push:
-    branches: [ master ]
-  # master分支的pr操作会触发当前脚本的执行
+    branches: [ main ]
+  # main分支的pr操作会触发当前脚本的执行
 #  pull_request:
-#    branches: [ master ]
+#    branches: [ main ]
   # 定时任务,分时日月年,为国际标准时间16点,对应中国时间0点
 #  schedule:
 #    - cron: '0 16 * * *'
