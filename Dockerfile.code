@@ -1,12 +1,25 @@
-FROM python:3.7.12-alpine3.14
-RUN apk add -U --no-cache bash curl jq findutils tzdata git gcc libc-dev linux-headers jpeg-dev zlib-dev && \
+FROM p3terx/s6-alpine
+RUN apk add -U --no-cache python3 python3-dev py3-pip tzdata git gcc libc-dev linux-headers jpeg-dev zlib-dev bash curl jq findutils && \
     curl -fsSL git.io/aria2c.sh | bash && \
     git clone --depth=1 https://github.com/txperl/PixivBiu.git && \
     cd /PixivBiu && \
-    rm config.yml && \
+    mkdir ./.pkg/code && \
+    mkdir ./.pkg/public && \
+    cp -r ./altfe/ ./.pkg/code/altfe/ && \
+    cp -r ./app/ ./.pkg/code/app/ && \
+    cp ./main.py ./.pkg/code/ && \
+    cp -r ./usr/ ./.pkg/public/usr/ && \
     pip install -r requirements.txt && \
-    apk del tzdata git libc-dev linux-headers && \
-    rm -rf /var/cache/apk/* /root/.cache /tmp/*
+    pip install pyinstaller  && \
+    python ./.pkg/py-pkger.py auto && \
+    mv ./.pkg/dist/* /  && \
+    pip freeze | grep -v "^-e" | xargs pip uninstall -y && \
+    cd .. && \
+    rm -rf PixivBiu/ && \
+    apk del python3 python3-dev py3-pip tzdata git gcc libc-dev linux-headers jpeg-dev zlib-dev bash curl && \
+    rm -rf /var/cache/apk/* && \
+    rm -rf /root/.cache && \
+    rm -rf /tmp/*    
 COPY rootfs /
 ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=1 \
     RCLONE_CONFIG=/config/rclone.conf \
@@ -21,5 +34,5 @@ ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=1 \
     UMASK_SET= \
     SPECIAL_MODE=
 EXPOSE 4001 6800 6888 6888/udp
-VOLUME /PixivBiu/downloads /PixivBiu/config.yml /PixivBiu/usr/.token.json /config /downloads
-ENTRYPOINT ["python","/PixivBiu/main.py"]
+VOLUME /downloads /config.yml /usr/.token.json /config /downloads
+ENTRYPOINT ["python","/main.py"]
