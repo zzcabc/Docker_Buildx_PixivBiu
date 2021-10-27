@@ -29,28 +29,6 @@ docker run -d \
     zzcabc/pixivbiu:latest
 ```
 
-
-
-
-
-docker run -d \
-    --name pixiv \
-    --log-opt max-size=1m \
-    -e PUID=$UID \
-    -e PGID=$GID \
-    -e UMASK_SET=022 \
-    -e RPC_PORT=6800 \
-    -p 6800:6800 \
-    -e LISTEN_PORT=6888 \
-    -p 6888:6888 \
-    -p 6888:6888/udp \
-    -p 4002:4001 \
-    -v $PWD/aria2-config:/config \
-    -v $PWD/aria2-downloads:/downloads \
-    -v /usr/docker/pixiv/config.yml:/PixivBiu/config.yml \
-    -v /usr/docker/pixiv/downloads:/PixivBiu/downloads \
-    -v /usr/docker/pixiv/.token.json:/PivixBiu/usr/.token.json \
-    zzcabc/pixivbiu-code
 # 映射路径说明
 
 此说明对应Docker容器内
