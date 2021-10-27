@@ -23,6 +23,7 @@ jobs:
     # 步骤
     steps:
       - name: Prepare
+        if: "contains(github.event.head_commit.message, 'test')"
         id: prepare
         # IMAGE_NAME ： 镜像名称
         # VERSION ： 源码版本
