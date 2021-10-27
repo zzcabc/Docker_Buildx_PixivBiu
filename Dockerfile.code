@@ -22,4 +22,4 @@ ENV S6_BEHAVIOUR_IF_STAGE2_FAILS=1 \
     SPECIAL_MODE=
 EXPOSE 4001 6800 6888 6888/udp
 VOLUME /PixivBiu/downloads /PixivBiu/config.yml /PixivBiu/usr/.token.json /config /downloads
-ENTRYPOINT ["python","main.py"]
+ENTRYPOINT ["python","/PixivBiu/main.py"]
