@@ -1,0 +1,88 @@
+# 利用GitHub Action自动构建多框架的docker镜像
+name: Build_Test
+
+on:
+  # main分支的push操作会触发当前脚本的执行
+  push:
+    branches: [ main ]
+  # main分支的pr操作会触发当前脚本的执行
+#  pull_request:
+#    branches: [ main ]
+  # 定时任务,分时日月年,为国际标准时间16点,对应中国时间0点
+#  schedule:
+#    - cron: '0 16 * * *'
+  # 点击star时开始任务
+#  watch:
+#    types: started
+
+
+jobs:
+  Build_Test:
+    # 运行在Ubuntu系统上
+    runs-on: ubuntu-latest
+    # 步骤
+    steps:
+      # 检出当前分支
+      - name: Checkout
+        uses: actions/checkout@main
+
+      # 初始化一些参数
+      - name: Prepare
+        id: prepare
+        # IMAGE_NAME ： 镜像名称
+        # ALI_ADD ：阿里镜像地址
+        # GITHUB_VERSION ： 源码版本
+        # DOCKERHUB_VERSION ： DockerHub 镜像版本
+        # TAG_VERSION ： 标签版本 zzcabc/pixivbiu:2.2.0a
+        # TAG_LATEST ： 最新版本 zzcabc/pixivbiu:latest
+        # ALI_VERSION ：
+        # ALI_LATEST :
+        run: |
+          IMAGE_NAME=pixivbiu-test
+          ALI_ADD=registry.cn-hangzhou.aliyuncs.com
+          GITHUB_VERSION=$(curl -sX GET "https://api.github.com/repos/txperl/PixivBiu/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]')
+          DOCKERHUB_VERSION=$(cat currentVersion)
+          echo ${GITHUB_VERSION}
+          echo ${DOCKERHUB_VERSION}
+          TAG_VERSION="${{ secrets.DOCKERHUB_USERNAME }}/${IMAGE_NAME}:${GITHUB_VERSION}"
+          TAG_LATEST="${{ secrets.DOCKERHUB_USERNAME }}/${IMAGE_NAME}:latest"
+          ALI_VERSION="${ALI_ADD}/${{ secrets.ALIYUN_NAMESPACES }}/${IMAGE_NAME}:${GITHUB_VERSION}"
+          ALI_LATEST="${ALI_ADD}/${{ secrets.ALIYUN_NAMESPACES }}/${IMAGE_NAME}:latest"
+          echo "GITHUB_VERSION=$GITHUB_VERSION" >> $GITHUB_OUTPUT
+          echo "DOCKERHUB_VERSION=$DOCKERHUB_VERSION" >> $GITHUB_OUTPUT
+          echo "TAG_VERSION=$TAG_VERSION" >> $GITHUB_OUTPUT
+          echo "TAG_LATEST=$TAG_LATEST" >> $GITHUB_OUTPUT
+          echo "ALI_VERSION=$ALI_VERSION" >> $GITHUB_OUTPUT
+          echo "ALI_LATEST=$ALI_LATEST" >> $GITHUB_OUTPUT
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+
+      # 初始化Docker Buildx
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      # 登录到DockerHub
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # # 登录到阿里镜像仓库
+      # - name: Login To Alibaba Cloud Container Registry
+      #   if: ${{ steps.prepare.outputs.DOCKERHUB_VERSION != steps.prepare.outputs.GITHUB_VERSION }}
+      #   run: |
+      #     docker login -u ${{ secrets.ALIYUN_USERNAME }} -p ${{ secrets.ALIYUN_PWD }} registry.cn-hangzhou.aliyuncs.com
+
+      # 构建并且推送
+      - name: BuildPyinstaller and Push
+        uses: docker/build-push-action@v2
+        with:
+          platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
+          file: ./Dockerfile.test
+          context: .
+          push: true
+          tags: |
+            ${{ steps.prepare.outputs.TAG_VERSION }}
+            ${{ steps.prepare.outputs.TAG_LATEST }}
