@@ -16,7 +16,7 @@
 
 # 使用方式
 
-在启动镜像之前，你需要准备 [.token](https://github.com/zzcabc/Docker_Buildx_PixivBiu/blob/master/.token.json) 文件用以登录，**请使用客户端获取 .token 文件**。
+在启动镜像之前，你需要准备 `.token` 文件用以登录，**请使用客户端获取 .token 文件**。
 
 **注意，使用 Docker 镜像时某些环境变量不建议修改**
 
@@ -26,7 +26,7 @@
 |`-e sys.autoOpen=false`|反正 Docker 内也没提供浏览器窗口，所以这项传了没用|
 |`-e sys.ignoreOutdated=true`|你敢改为`false`，容器就敢不启动|
 |`-e biu.download.saveURI="{ROOTPATH}/downloads/{KT}/"`| 如果不使用 aria2，**`{ROOTPATH}/downloads`是不能修改**|
-|`-e biu.download.saveURI="{ROOTPATH}/downloads/{KT}/"`| 使用 aria2，请**改为`/downloads`**|
+|`-e biu.download.saveURI="{ROOTPATH}/downloads/{KT}/"`| 使用 aria2，请**改为对应 aria2 的下载路径**，使用p3terx的Aria2Pro镜像则改为`/downloads` |
 
 ## pyinstaller 构建镜像的使用方式（默认拉取）
 
