@@ -2,7 +2,7 @@
 
 [DockerHub](https://hub.docker.com/r/zzcabc/pixivbiu) | [GitHub](https://github.com/zzcabc/Docker_Buildx_PixivBiu)
 
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/txperl/PixivBiu?label=PixivBiu&style=flat-square)](https://github.com/txperl/PixivBiu/releases/latest)[![Docker Image Version (latest by date)](https://img.shields.io/docker/v/zzcabc/pixivbiu?label=Docker&style=flat-square)](https://hub.docker.com/r/zzcabc/pixivbiu/tags?page=1&ordering=last_updated)
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/txperl/PixivBiu?label=PixivBiu&style=flat-square)](https://github.com/txperl/PixivBiu/releases/latest)[![Docker Image Version (latest by date)](https://img.shields.io/docker/v/zzcabc/pixivbiu?label=Docker&style=flat-square)](https://hub.docker.com/r/zzcabc/pixivbiu/tags?page=1&ordering=last_updated) [![Docker Pulls](https://img.shields.io/docker/pulls/zzcabc/pixivbiu?style=flat-square)](https://hub.docker.com/r/zzcabc/pixivbiu)
 
 
 本项目使用 Docker Buildx 构建全平台镜像，支持 `linux/amd64`、`linux/armv7`、`linux/armv8` 框架，不再对 `linux/386`、`linux/armv6`、`linux/ppc64le`、`linux/s390x` 架构提供支持。
