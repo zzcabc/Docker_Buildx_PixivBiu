@@ -1,5 +1,5 @@
 # 利用GitHub Action自动构建多框架的docker镜像
-name: Build
+name: Build-Test
 
 on:
   # main分支的push操作会触发当前脚本的执行
