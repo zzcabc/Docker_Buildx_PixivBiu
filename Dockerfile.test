@@ -13,6 +13,7 @@ RUN apk add -U --no-cache tzdata git gcc build-base libc-dev linux-headers jpeg-
     rm LICENSE && \
     rm README.md && \
     rm README_EN.md && \
+    pip install --upgrade pip && \
     pip install -r requirements.txt --no-cache-dir && \
     apk del tzdata git && \
     rm -rf /var/cache/apk/* && \
