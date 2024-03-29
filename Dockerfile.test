@@ -1,26 +1,45 @@
-FROM python:3.8-alpine
-RUN apk add -U --no-cache tzdata git gcc build-base libc-dev linux-headers jpeg-dev build-base libffi-dev libxml2-dev libxslt-dev libjpeg-turbo-dev zlib-dev yaml-dev && \
-    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
-    echo "Asia/Shanghai" > /etc/timezone && \
-    git clone --depth=1 https://github.com/txperl/PixivBiu.git && \
-    mv PixivBiu/ Pixiv/ && \
-    cd /Pixiv && \
-    rm -rf ./.git && \
-    rm -rf ./.github && \
-    rm config.yml && \
-    rm .gitattributes && \
-    rm .gitignore && \
-    rm LICENSE && \
-    rm README.md && \
-    rm README_EN.md && \
-    pip install --upgrade pip && \
-    pip install -r requirements.txt --no-cache-dir && \
-    apk del tzdata git && \
-    rm -rf /var/cache/apk/* && \
-    rm -rf /root/.cache && \
-    rm -rf /tmp/*
+# 基础镜像
+FROM python:3.11-bookworm
+
+# 安装依赖
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    tzdata \
+    git \
+    gcc \
+    build-essential \
+    libc-dev \
+    linux-headers-amd64 \
+    libjpeg-dev \
+    libffi-dev \
+    libxml2-dev \
+    libxslt-dev \
+    zlib1g-dev \
+    libyaml-dev \
+    && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+    && echo "Asia/Shanghai" > /etc/timezone \
+    && rm -rf /var/lib/apt/lists/*
+
+# 克隆PixivBiu项目
+RUN git clone --depth=1 https://github.com/txperl/PixivBiu.git /Pixiv \
+    && cd /Pixiv \
+    && rm -rf ./.git ./.github config.yml .gitattributes .gitignore LICENSE README.md README_EN.md
+
+# 更新pip并安装Python依赖
+RUN pip install --upgrade pip \
+    && pip install -r /Pixiv/requirements.txt --no-cache-dir
+
+# 清理不再需要的包
+RUN apt-get purge -y --auto-remove \
+    -o APT::AutoRemove::RecommendsImportant=false \
+    tzdata git
+
+# 暴露端口
 EXPOSE 4001
+
+# 设置环境变量
 ENV sys.host="0.0.0.0:4001"
 ENV sys.autoOpen=false
 ENV sys.ignoreOutdated=true
+
+# 定义入口点
 ENTRYPOINT ["python","/Pixiv/main.py"]
