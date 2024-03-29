@@ -1,7 +1,8 @@
 # 基础镜像
 FROM python:3.11-bookworm
 
-# 安装依赖
+# 安装依赖，尝试通用方法安装linux-headers
+# 注意：可能需要根据你的具体需求调整包名
 RUN apt-get update && apt-get install -y --no-install-recommends \
     tzdata \
     git \
@@ -14,9 +15,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxslt-dev \
     zlib1g-dev \
     libyaml-dev \
+    && apt-get install -y linux-headers-generic || apt-get install -y linux-headers-amd64 || apt-get install -y linux-headers-arm64 || apt-get install -y linux-headers-armhf \
+    && rm -rf /var/lib/apt/lists/* \
     && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
-    && echo "Asia/Shanghai" > /etc/timezone \
-    && rm -rf /var/lib/apt/lists/*
+    && echo "Asia/Shanghai" > /etc/timezone
 
 # 克隆PixivBiu项目
 RUN git clone --depth=1 https://github.com/zzcabc/PixivBiu.git /Pixiv \
