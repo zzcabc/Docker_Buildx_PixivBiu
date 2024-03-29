@@ -1,23 +1,23 @@
 # 利用GitHub Action自动构建多框架的docker镜像
-name: Build_Test
+name: Build
 
 on:
   # main分支的push操作会触发当前脚本的执行
-  push:
-    branches: [ main ]
+ push:
+   branches: [ main ]
   # main分支的pr操作会触发当前脚本的执行
 #  pull_request:
 #    branches: [ main ]
   # 定时任务,分时日月年,为国际标准时间16点,对应中国时间0点
-#  schedule:
-#    - cron: '0 16 * * *'
+  # schedule:
+  #   - cron: '0 16 * * *'
   # 点击star时开始任务
-#  watch:
-#    types: started
+  # watch:
+  #   types: started
 
 
 jobs:
-  Build_Test:
+  Build:
     # 运行在Ubuntu系统上
     runs-on: ubuntu-latest
     # 步骤
@@ -69,20 +69,50 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # # 登录到阿里镜像仓库
-      # - name: Login To Alibaba Cloud Container Registry
-      #   if: ${{ steps.prepare.outputs.DOCKERHUB_VERSION != steps.prepare.outputs.GITHUB_VERSION }}
-      #   run: |
-      #     docker login -u ${{ secrets.ALIYUN_USERNAME }} -p ${{ secrets.ALIYUN_PWD }} registry.cn-hangzhou.aliyuncs.com
+      # 登录到阿里镜像仓库
+      - name: Login To Alibaba Cloud Container Registry
+        run: |
+          docker login -u ${{ secrets.ALIYUN_USERNAME }} -p ${{ secrets.ALIYUN_PWD }} registry.cn-hangzhou.aliyuncs.com
+
+      # 构建并且推送
+      - name: BuildSrc and Push
+        uses: docker/build-push-action@v3
+        with:
+          platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
+          file: ./Dockerfile.srcbuild
+          context: .
+          push: true
+          tags: |
+            ${{ steps.prepare.outputs.TAG_VERSION }}-src
+            ${{ steps.prepare.outputs.TAG_LATEST }}-src
+            ${{ steps.prepare.outputs.ALI_VERSION }}-src
+            ${{ steps.prepare.outputs.ALI_LATEST }}-src
 
       # 构建并且推送
       - name: BuildPyinstaller and Push
         uses: docker/build-push-action@v3
         with:
           platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
-          file: ./Dockerfile.test
+          file: ./Dockerfile.pyinstallerbuild
           context: .
           push: true
           tags: |
             ${{ steps.prepare.outputs.TAG_VERSION }}
             ${{ steps.prepare.outputs.TAG_LATEST }}
+            ${{ steps.prepare.outputs.ALI_VERSION }}
+            ${{ steps.prepare.outputs.ALI_LATEST }}
+      
+      # 初始化版本号与git 
+      - name: commit
+        run: |
+          echo "${{ steps.prepare.outputs.GITHUB_VERSION }}" > currentVersion
+          git config --global user.name zhaocheng
+          git config --global user.email zhaocheng990105@gmail.com
+          git add currentVersion
+          git commit -m "当前版本是:${{ steps.prepare.outputs.GITHUB_VERSION }}" -a
+      
+      # 推送版本号到GitHub 
+      - name: Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.TOKEN_GITHUB }}
