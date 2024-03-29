@@ -79,7 +79,7 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           platforms: linux/amd64,linux/arm64/v8
-          file: ./Dockerfile.srcbuild
+          file: ./Dockerfile.test
           context: .
           push: true
           tags: |
@@ -88,19 +88,19 @@ jobs:
             ${{ steps.prepare.outputs.ALI_VERSION }}-src
             ${{ steps.prepare.outputs.ALI_LATEST }}-src
 
-      # 构建并且推送
-      - name: BuildPyinstaller and Push
-        uses: docker/build-push-action@v3
-        with:
-          platforms: linux/amd64,linux/arm64/v8
-          file: ./Dockerfile.pyinstallerbuild
-          context: .
-          push: true
-          tags: |
-            ${{ steps.prepare.outputs.TAG_VERSION }}
-            ${{ steps.prepare.outputs.TAG_LATEST }}
-            ${{ steps.prepare.outputs.ALI_VERSION }}
-            ${{ steps.prepare.outputs.ALI_LATEST }}
+      # # 构建并且推送
+      # - name: BuildPyinstaller and Push
+      #   uses: docker/build-push-action@v3
+      #   with:
+      #     platforms: linux/amd64,linux/arm64/v8
+      #     file: ./Dockerfile.pyinstallerbuild
+      #     context: .
+      #     push: true
+      #     tags: |
+      #       ${{ steps.prepare.outputs.TAG_VERSION }}
+      #       ${{ steps.prepare.outputs.TAG_LATEST }}
+      #       ${{ steps.prepare.outputs.ALI_VERSION }}
+      #       ${{ steps.prepare.outputs.ALI_LATEST }}
       
       # # 初始化版本号与git 
       # - name: commit

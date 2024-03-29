@@ -1,25 +1,20 @@
-FROM alpine:latest
-RUN apk add -U --no-cache python3 python3-dev py3-pip tzdata git gcc libc-dev musl-dev linux-headers jpeg-dev zlib-dev && \
-    python3 --version
+FROM python:3.7.12-alpine3.14
+RUN apk add -U --no-cache tzdata git gcc libc-dev linux-headers jpeg-dev zlib-dev && \
     cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && \
     echo "Asia/Shanghai" > /etc/timezone && \
-    git clone --depth=1 https://github.com/zzcabc/PixivBiu.git && \
-    mkdir Pixiv && \
-    mkdir /PixivBiu/.pkg/code && \
-    mkdir /PixivBiu/.pkg/public && \
-    cp -r /PixivBiu/altfe/                        /PixivBiu/.pkg/code/altfe/ && \
-    cp -r /PixivBiu/app/                          /PixivBiu/.pkg/code/app/ && \
-    cp /PixivBiu/main.py                          /PixivBiu/.pkg/code/ && \
-    cp -r /PixivBiu/usr/                          /PixivBiu/.pkg/public/usr/ && \
-    cp /PixivBiu/app/config/biu_default.yml       /PixivBiu/.pkg/public/config.yml && \
-    cp /PixivBiu/LICENSE                          /PixivBiu/.pkg/public/ && \
-    cp /PixivBiu/README.md                        /PixivBiu/.pkg/public/ && \
-    pip install -r /PixivBiu/requirements.txt --no-cache-dir && \
-    pip install pyinstaller --no-cache-dir && \
-    python3 /PixivBiu/.pkg/py-pkger.py auto && \
-    mv /PixivBiu/.pkg/dist/* /Pixiv  && \
-    rm -rf PixivBiu/ /Pixiv/config.yml /Pixiv/LICENSE /Pixiv/README.md && \
-    apk del python3 python3-dev py3-pip tzdata git gcc libc-dev musl-dev linux-headers jpeg-dev zlib-dev && \
+    git clone --depth=1 https://github.com/txperl/PixivBiu.git && \
+    mv PixivBiu/ Pixiv/ && \
+    cd /Pixiv && \
+    rm -rf ./.git && \
+    rm -rf ./.github && \
+    rm config.yml && \
+    rm .gitattributes && \
+    rm .gitignore && \
+    rm LICENSE && \
+    rm README.md && \
+    rm README_EN.md && \
+    pip install -r requirements.txt --no-cache-dir && \
+    apk del tzdata git && \
     rm -rf /var/cache/apk/* && \
     rm -rf /root/.cache && \
     rm -rf /tmp/*
@@ -27,4 +22,4 @@ EXPOSE 4001
 ENV sys.host="0.0.0.0:4001"
 ENV sys.autoOpen=false
 ENV sys.ignoreOutdated=true
-ENTRYPOINT ["/Pixiv/main"]
+ENTRYPOINT ["python","/Pixiv/main.py"]
