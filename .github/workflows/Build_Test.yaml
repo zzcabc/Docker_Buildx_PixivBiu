@@ -78,7 +78,7 @@ jobs:
       - name: BuildSrc and Push
         uses: docker/build-push-action@v3
         with:
-          platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
+          platforms: linux/amd64,linux/arm64/v8
           file: ./Dockerfile.srcbuild
           context: .
           push: true
@@ -92,7 +92,7 @@ jobs:
       - name: BuildPyinstaller and Push
         uses: docker/build-push-action@v3
         with:
-          platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
+          platforms: linux/amd64,linux/arm64/v8
           file: ./Dockerfile.pyinstallerbuild
           context: .
           push: true
@@ -102,17 +102,17 @@ jobs:
             ${{ steps.prepare.outputs.ALI_VERSION }}
             ${{ steps.prepare.outputs.ALI_LATEST }}
       
-      # 初始化版本号与git 
-      - name: commit
-        run: |
-          echo "${{ steps.prepare.outputs.GITHUB_VERSION }}" > currentVersion
-          git config --global user.name zhaocheng
-          git config --global user.email zhaocheng990105@gmail.com
-          git add currentVersion
-          git commit -m "当前版本是:${{ steps.prepare.outputs.GITHUB_VERSION }}" -a
+      # # 初始化版本号与git 
+      # - name: commit
+      #   run: |
+      #     echo "${{ steps.prepare.outputs.GITHUB_VERSION }}" > currentVersion
+      #     git config --global user.name zhaocheng
+      #     git config --global user.email zhaocheng990105@gmail.com
+      #     git add currentVersion
+      #     git commit -m "当前版本是:${{ steps.prepare.outputs.GITHUB_VERSION }}" -a
       
-      # 推送版本号到GitHub 
-      - name: Push changes
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.TOKEN_GITHUB }}
+      # # 推送版本号到GitHub 
+      # - name: Push changes
+      #   uses: ad-m/github-push-action@master
+      #   with:
+      #     github_token: ${{ secrets.TOKEN_GITHUB }}
