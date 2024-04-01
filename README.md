@@ -18,6 +18,17 @@
 
 在启动镜像之前，你需要准备 `.token` 文件用以登录，**请使用客户端获取 .token 文件**。
 
+当上述方法登录无效时，推荐下面方法
+
+1. 取消映射 `-v 本机路径:/Pixiv/usr/.token` token文件
+2. 将`docker run -d` 改为 `docker run -itd`
+3. 使用`docker start pixivbiu` 启动docker容器
+4. 使用`docker attach pixivbiu` 进入容器
+5. 可能遇到进入容器无日志输出，这时按`y`
+6. 根据日志给出提示进行操作
+7. 使用 `exit` 推出容器
+8. 使用attach进入容器并推出，这是容器也会关闭，使用`docker start pixivbiu` 重新启用容器即可
+
 **注意，使用 Docker 镜像时某些环境变量不建议修改**
 
 | 环境变量 | 注意事项 |
@@ -35,7 +46,7 @@
 - 将 `zzcabc/pixivbiu:latest` 换成 `registry.cn-hangzhou.aliyuncs.com/zzcabc/pixivbiu:latest`
 
 ```sh
-docker run -d \
+docker run -itd \
     --name pixivbiu \
     --user $(id -u):$(id -g) \
     -p 本机端口:4001 \
@@ -54,7 +65,7 @@ docker run -d \
 如果你要使用环境变量传配置，请自行修改下方 ` -e ` 中的内容。
 
 ```sh
-docker run -d \
+docker run -itd \
     --name pixivbiu \
     --user $(id -u):$(id -g) \
     -p 本机端口:4001 \
@@ -85,7 +96,7 @@ docker run -d \
 ### 以默认的配置启动容器
 
 ```sh
-docker run -d \
+docker run -itd \
     --name pixivbiu \
     --user $(id -u):$(id -g) \
     -p 本机端口:4001 \
@@ -101,7 +112,7 @@ docker run -d \
 - 将 `zzcabc/pixivbiu:latest-src` 换成 `registry.cn-hangzhou.aliyuncs.com/zzcabc/pixivbiu:latest-src`
 
 ```sh
-docker run -d \
+docker run -itd \
     --name pixivbiu \
     --user $(id -u):$(id -g) \
     -p 本机端口:4001 \
@@ -120,7 +131,7 @@ docker run -d \
 如果你要使用环境变量传配置，请自行修改下方 ` -e ` 中的内容。
 
 ```sh
-docker run -d \
+docker run -itd \
     --name pixivbiu \
     --user $(id -u):$(id -g) \
     -p 本机端口:4001 \
@@ -151,7 +162,7 @@ docker run -d \
 ### 以默认的配置启动容器
 
 ```sh
-docker run -d \
+docker run -itd \
     --name pixivbiu \
     --user $(id -u):$(id -g) \
     -p 本机端口:4001 \
@@ -167,6 +178,9 @@ docker run -d \
 - `/Pixiv/downloads`: 图片下载地址
 - `/Pixiv/config.yml`: 配置文件（有环境变量即可不用传入）
 - `/Pixiv/usr/.token`: Token 存放位置（必须映射）
+
+- `{ROOTPATH}` 路径为 容器内`/Pixiv`
+
 
 # aria2 的使用方法
 
