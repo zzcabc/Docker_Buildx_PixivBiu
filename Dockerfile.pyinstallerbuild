@@ -5,6 +5,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends tzdata git gcc 
     && echo "Asia/Shanghai" > /etc/timezone && \
     git clone --depth=1 https://github.com/zzcabc/PixivBiu.git && \
     cd /PixivBiu && \
+    mkdir ./.pkg/code && \
+    mkdir ./.pkg/public && \
+    cp -r ./altfe/ ./.pkg/code/altfe/ && \
+    cp -r ./app/ ./.pkg/code/app/ && \
+    cp ./main.py ./.pkg/code/ && \
+    cp -r ./usr/ ./.pkg/public/usr/ && \
+    cp ./app/config/biu_default.yml ./.pkg/public/config.yml && \
+    cp ./LICENSE ./.pkg/public/ && \
+    cp ./README.md ./.pkg/public/ && \      
     pip install -r requirements.txt --no-cache-dir && \
     pip install pyinstaller --no-cache-dir && \
     python3 /PixivBiu/.pkg/py-pkger.py auto && \
