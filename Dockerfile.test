@@ -21,7 +21,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && echo "Asia/Shanghai" > /etc/timezone
 
 # 克隆PixivBiu项目
-RUN git clone --depth=1 https://github.com/zzcabc/PixivBiu.git /Pixiv \
+RUN git clone --depth=1 https://github.com/txperl/PixivBiu.git /Pixiv \
     && cd /Pixiv \
     && rm -rf ./.git ./.github config.yml .gitattributes .gitignore LICENSE README.md README_EN.md
 

@@ -3,7 +3,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends tzdata git gcc 
     apt-get install -y linux-headers-generic || apt-get install -y linux-headers-amd64 || apt-get install -y linux-headers-arm64 || apt-get install -y linux-headers-armhf \
     && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && echo "Asia/Shanghai" > /etc/timezone && \
-    git clone --depth=1 https://github.com/zzcabc/PixivBiu.git /Pixiv && \
+    git clone --depth=1 https://github.com/txperl/PixivBiu.git /Pixiv && \
     cd /Pixiv && \
     rm -rf ./.git ./.github config.yml .gitattributes .gitignore LICENSE README.md README_EN.md && \
     pip install -r requirements.txt --no-cache-dir && \
