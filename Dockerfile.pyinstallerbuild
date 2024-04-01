@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends tzdata git gcc 
     python3 /PixivBiu/.pkg/py-pkger.py auto && \
     cd / && \
     mkdir -p /Pixiv && \
-    mv /PixivBiu/.pkg/dist/* /Pixiv/*  && \
+    cp -r /PixivBiu/.pkg/dist/* /Pixiv/  && \
     rm -rf /PixivBiu /Pixiv/config.yml /Pixiv/LICENSE /Pixiv/README.md && \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false tzdata git && \
     rm -rf /var/lib/apt/lists/* && \
