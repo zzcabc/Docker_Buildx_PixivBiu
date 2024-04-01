@@ -18,11 +18,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends tzdata git gcc 
     pip install pyinstaller --no-cache-dir && \
     python3 /PixivBiu/.pkg/py-pkger.py auto && \
     cd / && \
-    mkdir -p Pixiv/ && \
+    mkdir -p /Pixiv && \
     mv /PixivBiu/.pkg/dist/* /Pixiv/*  && \
     rm -rf /PixivBiu /Pixiv/config.yml /Pixiv/LICENSE /Pixiv/README.md && \
+    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false tzdata git && \
     rm -rf /var/lib/apt/lists/* && \
-    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false tzdata git
+    rm -rf /tmp/*
 EXPOSE 4001
 ENV sys.host="0.0.0.0:4001"
 ENV sys.autoOpen=false
