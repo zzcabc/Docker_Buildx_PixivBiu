@@ -78,8 +78,8 @@ jobs:
       - name: BuildSrc and Push
         uses: docker/build-push-action@v3
         with:
-          platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
-          file: ./Dockerfile.test
+          platforms: linux/amd64,linux/arm64/v8
+          file: ./Dockerfile.srcbuild
           context: .
           push: true
           tags: |
@@ -92,7 +92,7 @@ jobs:
       - name: BuildPyinstaller and Push
         uses: docker/build-push-action@v3
         with:
-          platforms: linux/amd64,linux/arm/v7,linux/arm64/v8
+          platforms: linux/amd64,linux/arm64/v8
           file: ./Dockerfile.pyinstallerbuild
           context: .
           push: true
