@@ -17,7 +17,7 @@ on:
   workflow_dispatch:
     inputs:
       build:
-        description: 'build' 
+        description: 's' 
         required: true
         default: 'v'
 
