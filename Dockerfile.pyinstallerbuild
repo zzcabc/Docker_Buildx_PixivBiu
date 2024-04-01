@@ -18,7 +18,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends tzdata git gcc 
     pip install pyinstaller --no-cache-dir && \
     python3 /PixivBiu/.pkg/py-pkger.py auto && \
     cd / && \
-    mv /PixivBiu/.pkg/dist/* /Pixiv  && \
+    mkdir -p Pixiv/ && \
+    mv /PixivBiu/.pkg/dist/* /Pixiv/*  && \
     rm -rf /PixivBiu /Pixiv/config.yml /Pixiv/LICENSE /Pixiv/README.md && \
     rm -rf /var/lib/apt/lists/* && \
     apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false tzdata git
