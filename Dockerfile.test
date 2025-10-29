@@ -27,21 +27,10 @@ FROM debian:stable-slim as main
 # 设置时区
 ENV TZ=Asia/Shanghai
 
-# 安装运行时依赖
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates \
-    libjpeg62-turbo \
-    libffi8 \
-    libxml2 \
-    libxslt1.1 \
-    zlib1g \
-    libyaml-0-2 && \
-    # 设置时区
+RUN apt update && apt install -y --no-install-recommends ca-certificates libjpeg62-turbo libffi8 libxml2 libxslt1.1 zlib1g libyaml-0-2 && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
-    rm -rf /var/lib/apt/lists/* /tmp/*
-
-# 创建应用用户和数据目录
-RUN groupadd -r -g 1000 appuser && \
+    rm -rf /var/lib/apt/lists/* /tmp/* && \
+    groupadd -r -g 1000 appuser && \
     useradd -r -u 1000 -g appuser appuser && \
     mkdir -p /Pixiv/downlaods && chown -R appuser:appuser /Pixiv/downlaods
 

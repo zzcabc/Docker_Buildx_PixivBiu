@@ -6,6 +6,10 @@ sys.host=${sys.host:-"0.0.0.0:4001"}
 sys.autoOpen=${sys.autoOpen:-"false"}
 sys.ignoreOutdated=${sys.ignoreOutdated:-"true"}
 
+ENV sys.host="0.0.0.0:4001"
+ENV sys.autoOpen=false
+ENV sys.ignoreOutdated=true
+
 
 # 如果指定了非root用户ID，切换到相应用户
 if [ -n "$PUID" ] && [ "$PUID" != "0" ]; then
