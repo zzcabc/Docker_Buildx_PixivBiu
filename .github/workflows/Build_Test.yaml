@@ -27,6 +27,9 @@ jobs:
   Build:
     # 运行在Ubuntu系统上
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
     # 步骤
     steps:
       # 检出当前分支
