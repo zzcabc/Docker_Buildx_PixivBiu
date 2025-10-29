@@ -46,17 +46,21 @@ jobs:
         # ALI_LATEST :
         run: |
           IMAGE_NAME=pixivbiu-test
-          ALI_ADD=registry.cn-hangzhou.aliyuncs.com
+          GHCR_ADD=ghcr.io
           GITHUB_VERSION=$(curl -sX GET "https://api.github.com/repos/txperl/PixivBiu/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]')
           DOCKERHUB_VERSION=$(cat currentVersion)
           echo ${GITHUB_VERSION}
           echo ${DOCKERHUB_VERSION}
           TAG_VERSION="${{ secrets.DOCKERHUB_USERNAME }}/${IMAGE_NAME}:${GITHUB_VERSION}"
           TAG_LATEST="${{ secrets.DOCKERHUB_USERNAME }}/${IMAGE_NAME}:latest"
+          GHCR_VERSION="${GHCR_ADD}/${{ secrets.DOCKERHUB_USERNAME }}/${IMAGE_NAME}:${GITHUB_VERSION}"
+          GHCR_LATEST="${GHCR_ADD}/${{ secrets.DOCKERHUB_USERNAME }}/${IMAGE_NAME}:latest"
           echo "GITHUB_VERSION=$GITHUB_VERSION" >> $GITHUB_OUTPUT
           echo "DOCKERHUB_VERSION=$DOCKERHUB_VERSION" >> $GITHUB_OUTPUT
           echo "TAG_VERSION=$TAG_VERSION" >> $GITHUB_OUTPUT
           echo "TAG_LATEST=$TAG_LATEST" >> $GITHUB_OUTPUT
+          echo "GHCR_VERSION=$GHCR_VERSION" >> $GITHUB_OUTPUT
+          echo "GHCR_LATEST=$GHCR_LATEST" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -83,3 +87,5 @@ jobs:
           tags: |
             ${{ steps.prepare.outputs.TAG_VERSION }}
             ${{ steps.prepare.outputs.TAG_LATEST }}
+            ${{ steps.prepare.outputs.GHCR_VERSION }}
+            ${{ steps.prepare.outputs.GHCR_LATEST }}
