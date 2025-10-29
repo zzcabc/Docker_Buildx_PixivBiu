@@ -77,9 +77,9 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       # 登录到阿里镜像仓库
-      - name: Login To Alibaba Cloud Container Registry
-        run: |
-          docker login -u ${{ secrets.ALIYUN_USERNAME }} -p ${{ secrets.ALIYUN_PWD }} registry.cn-hangzhou.aliyuncs.com
+      # - name: Login To Alibaba Cloud Container Registry
+      #   run: |
+      #     docker login -u ${{ secrets.ALIYUN_USERNAME }} -p ${{ secrets.ALIYUN_PWD }} registry.cn-hangzhou.aliyuncs.com
 
       # 构建并且推送
       - name: BuildSrc and Push
