@@ -106,8 +106,6 @@ jobs:
           tags: |
             ${{ steps.prepare.outputs.TAG_VERSION }}
             ${{ steps.prepare.outputs.TAG_LATEST }}
-            ${{ steps.prepare.outputs.ALI_VERSION }}
-            ${{ steps.prepare.outputs.ALI_LATEST }}
       
       # # 初始化版本号与git 
       # - name: commit
