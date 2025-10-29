@@ -1,11 +1,8 @@
-FROM python:3.11-bookworm
+# 构建阶段
+FROM python:3.11-bookworm as builder
 
-# 设置时区
-ENV TZ=Asia/Shanghai
-
-# 安装依赖
+# 安装构建依赖
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    tzdata \
     git \
     gcc \
     build-essential \
@@ -16,23 +13,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libxslt-dev \
     zlib1g-dev \
     libyaml-dev && \
-    # 安装内核头文件（兼容不同架构）
-    (apt-get install -y linux-headers-generic || \
-     apt-get install -y linux-headers-amd64 || \
-     apt-get install -y linux-headers-arm64 || \
-     apt-get install -y linux-headers-armhf) && \
-    wget -O /tmp/su-exec.tar.gz https://github.com/ncopa/su-exec/archive/refs/tags/v0.2.tar.gz && \
-    tar -xzf /tmp/su-exec.tar.gz -C /tmp && \
-    cd /tmp/su-exec-0.2 && \
-    make && \
-    cp su-exec /usr/local/bin/ && \
-    rm -rf /tmp/su-exec*
-    # 克隆项目
-    git clone --depth=1 https://github.com/txperl/PixivBiu.git && \
+
+# 克隆和构建应用
+RUN git clone --depth=1 https://github.com/txperl/PixivBiu.git && \
     cd /PixivBiu && \
-    # 创建目录结构
     mkdir -p ./.pkg/code ./.pkg/public && \
-    # 复制必要文件
     cp -r ./altfe/ ./.pkg/code/altfe/ && \
     cp -r ./app/ ./.pkg/code/app/ && \
     cp ./main.py ./.pkg/code/ && \
@@ -40,62 +25,51 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     cp ./app/config/biu_default.yml ./.pkg/public/config.yml && \
     cp ./LICENSE ./.pkg/public/ && \
     cp ./README.md ./.pkg/public/ && \
-    # 安装Python依赖
     pip install -r requirements.txt --no-cache-dir && \
     pip install pyinstaller --no-cache-dir && \
-    # 构建应用
-    python3 /PixivBiu/.pkg/py-pkger.py auto && \
-    cd / && \
-    # 创建输出目录
-    mkdir -p /Pixiv && \
-    cp -r /PixivBiu/.pkg/dist/* /Pixiv/ && \
-    # 创建应用程序用户和组
-    groupadd -r -g 1000 appuser && \
-    useradd -r -u 1000 -g appuser appuser && \
-    # 更改文件所有权
-    chown -R appuser:appuser /Pixiv && \
-    # 清理工作
-    rm -rf /PixivBiu && \
-    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
-        tzdata git gcc build-essential && \
+    python3 /PixivBiu/.pkg/py-pkger.py auto
+
+# 运行阶段
+FROM debian:bookworm-slim as main
+
+# 设置时区
+ENV TZ=Asia/Shanghai
+
+# 安装运行时依赖
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
+    libjpeg62-turbo \
+    libffi8 \
+    libxml2 \
+    libxslt1.1 \
+    zlib1g \
+    libyaml-0-2 && \
+    # 设置时区
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     rm -rf /var/lib/apt/lists/* /tmp/*
+
+# 创建应用用户和数据目录
+RUN groupadd -r -g 1000 appuser && \
+    useradd -r -u 1000 -g appuser appuser && \
+    mkdir -p /Pixiv/downlaods && chown -R appuser:appuser /Pixiv/downlaods
+
+# 从构建阶段复制可执行文件
+COPY --from=builder --chown=appuser:appuser /PixivBiu/.pkg/dist/ /Pixiv/
+
+# 从GitHub仓库复制entrypoint.sh
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
+# 设置环境变量
+ENV sys.host="0.0.0.0:4001"
+ENV sys.autoOpen=false
+ENV sys.ignoreOutdated=true
 
 # 暴露端口
 EXPOSE 4001
 
-# 设置环境变量默认值
-ENV SYS_HOST="0.0.0.0:4001"
-ENV SYS_AUTO_OPEN="false"
-ENV SYS_IGNORE_OUTDATED="true"
-ENV PUID=1000
-ENV PGID=1000
-
-# 创建数据目录（供用户挂载）
-RUN mkdir -p /Pixiv/downloads && chown appuser:appuser /Pixiv/downloads
-
 # 设置工作目录
 WORKDIR /Pixiv
-
-# 创建启动脚本
-RUN echo '#!/bin/sh\n\
-if [ -n "$PUID" ] && [ -n "$PGID" ]; then\n\
-    # 删除已存在的用户和组（如果存在）\n\
-    deluser appuser 2>/dev/null || true\n\
-    delgroup appuser 2>/dev/null || true\n\
-    \n\
-    # 创建新的组和用户\n\
-    addgroup -g $PGID appuser || true\n\
-    adduser -D -u $PUID -G appuser appuser || true\n\
-    \n\
-    # 更改文件所有权\n\
-    chown -R appuser:appuser /Pixiv /data\n\
-    \n\
-    # 使用指定用户运行应用\n\
-    exec su-exec appuser:appuser /Pixiv/main "$@"\n\
-else\n\
-    # 如果没有指定PUID/PGID，使用root运行\n\
-    exec /Pixiv/main "$@"\n\
-fi' > /entrypoint.sh && chmod +x /entrypoint.sh
 
 # 使用entrypoint脚本
 ENTRYPOINT ["/entrypoint.sh"]

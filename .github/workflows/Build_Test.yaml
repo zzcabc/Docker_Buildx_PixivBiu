@@ -82,25 +82,25 @@ jobs:
       #     docker login -u ${{ secrets.ALIYUN_USERNAME }} -p ${{ secrets.ALIYUN_PWD }} registry.cn-hangzhou.aliyuncs.com
 
       # 构建并且推送
-      - name: BuildSrc and Push
-        uses: docker/build-push-action@v3
-        with:
-          platforms: linux/amd64,linux/arm64/v8
-          file: ./Dockerfile.srcbuild
-          context: .
-          push: true
-          tags: |
-            ${{ steps.prepare.outputs.TAG_VERSION }}-src
-            ${{ steps.prepare.outputs.TAG_LATEST }}-src
-            ${{ steps.prepare.outputs.ALI_VERSION }}-src
-            ${{ steps.prepare.outputs.ALI_LATEST }}-src
+      # - name: BuildSrc and Push
+      #   uses: docker/build-push-action@v3
+      #   with:
+      #     platforms: linux/amd64,linux/arm64/v8
+      #     file: ./Dockerfile.srcbuild
+      #     context: .
+      #     push: true
+      #     tags: |
+      #       ${{ steps.prepare.outputs.TAG_VERSION }}-src
+      #       ${{ steps.prepare.outputs.TAG_LATEST }}-src
+      #       ${{ steps.prepare.outputs.ALI_VERSION }}-src
+      #       ${{ steps.prepare.outputs.ALI_LATEST }}-src
 
       # 构建并且推送
       - name: BuildPyinstaller and Push
         uses: docker/build-push-action@v3
         with:
           platforms: linux/amd64,linux/arm64/v8
-          file: ./Dockerfile.pyinstallerbuild
+          file: ./Dockerfile.test
           context: .
           push: true
           tags: |
