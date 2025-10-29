@@ -1,11 +1,20 @@
+ENV WORKDIR="/Pixiv" \
+    OUTPUT_DIR="/Pixiv/downloads" \
+    PORT=4001 \
+    TZ=Asia/Shanghai \
+    sys.host="0.0.0.0:4001" \
+    sys.autoOpen=false \
+    sys.ignoreOutdated=true
+
+
+ENV PUID=0 PGID=0 UMASK=022
+
 # 构建阶段
 FROM python:3.11.14-trixie as builder
 
 # 安装构建依赖
 RUN apt update && apt install -y --no-install-recommends tzdata git gcc build-essential libc-dev libjpeg-dev libffi-dev libxml2-dev libxslt-dev zlib1g-dev libyaml-dev && \
     apt install -y linux-headers-generic || apt install -y linux-headers-amd64 || apt install -y linux-headers-arm64 || apt install -y linux-headers-armhf \
-    && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
-    && echo "Asia/Shanghai" > /etc/timezone && \
     git clone --depth=1 https://github.com/txperl/PixivBiu.git && \
     cd /PixivBiu && \
     mkdir ./.pkg/code && \
@@ -24,33 +33,20 @@ RUN apt update && apt install -y --no-install-recommends tzdata git gcc build-es
 # 运行阶段
 FROM debian:stable-slim as main
 
-# 设置时区
-ENV TZ=Asia/Shanghai
-
-RUN apt update && apt install -y --no-install-recommends ca-certificates libjpeg62-turbo libffi8 libxml2 libxslt1.1 zlib1g libyaml-0-2 && \
+RUN apt update && apt install -y --no-install-recommends ca-certificates libjpeg62-turbo libffi8 libxml2 libxslt1.1 zlib1g libyaml-0-2 sudo && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone && \
     rm -rf /var/lib/apt/lists/* /tmp/* && \
-    groupadd -r -g 1000 appuser && \
-    useradd -r -u 1000 -g appuser appuser && \
-    mkdir -p /Pixiv/downlaods && chown -R appuser:appuser /Pixiv/downlaods
+    mkdir -p $WORKDIR $OUTPUT_DIR
 
 # 从构建阶段复制可执行文件
-COPY --from=builder --chown=appuser:appuser /PixivBiu/.pkg/dist/ /Pixiv/
+COPY --from=builder /PixivBiu/.pkg/dist/ $WORKDIR/
 
 # 从GitHub仓库复制entrypoint.sh
 COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
-# 设置环境变量
-ENV sys.host="0.0.0.0:4001"
-ENV sys.autoOpen=false
-ENV sys.ignoreOutdated=true
-
-# 暴露端口
-EXPOSE 4001
-
-# 设置工作目录
-WORKDIR /Pixiv
-
-# 使用entrypoint脚本
-ENTRYPOINT ["/entrypoint.sh"]
+VOLUME $OUTPUT_DIR
+EXPOSE $PORT
+WORKDIR ${WORKDIR}
+ENTRYPOINT [ "sh" ]
+CMD [ "/entrypoint.sh" ]
