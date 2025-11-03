@@ -1,15 +1,14 @@
 #!/bin/sh
-set -e
-
 BASE_URI="0.0.0.0"
 PORT=4001
 DOWNLOAD_PATH=/Pixiv/downloads
 USER_PATH=/Pixiv/usr
 CONFIG_FILE=/Pixiv/config.yml
-
+if [ -z "$UMASK" ]; then
+    UMASK=022
+fi
 umask ${UMASK}
 echo "Starting PixivBiu with PUID:PGID ${PUID}:${PGID} and UMASK ${UMASK}"
-
 # 检查并创建用户（如果需要）
 if [ -n "$PUID" ] && [ "$PUID" != "0" ]; then
     if ! getent passwd "$PUID" >/dev/null 2>&1; then
@@ -24,18 +23,17 @@ else
     PGID=0
     echo "Running as root user"
 fi
-
 #确保目录存在
 mkdir -p ${DOWNLOAD_PATH} ${USER_PATH}
 echo "Ensured directories ${DOWNLOAD_PATH} and ${USER_PATH} exist"
-
 #设置权限
 chown -R ${PUID}:${PGID} ${DOWNLOAD_PATH}
 chown -R ${PUID}:${PGID} ${USER_PATH}
+echo "Set ownership of ${DOWNLOAD_PATH} and ${USER_PATH} to ${PUID}:${PGID}"
 chmod -R 755 ${DOWNLOAD_PATH}
 chmod -R 755 ${USER_PATH}
 echo "Set permissions for ${DOWNLOAD_PATH} and ${USER_PATH}"
-
+set -e
 get_env() {
     env | grep "^$1=" | cut -d= -f2-
 }
@@ -60,25 +58,23 @@ BIU_DOWNLOAD_WHATS_UGOIRA=$(get_env "biu.download.whatsUgoira")
 BIU_DOWNLOAD_IMAGE_HOST=$(get_env "biu.download.imageHost")
 SECRET_KEY_API_SAUCENAO=$(get_env "secret.key.apiSauceNAO")
 echo "Ready to start PixivBiu with environment variable configurations."
-
-if [ -n "$SYS_PROXY" ]; then
-    echo "set sys_proxy $SYS_PROXY"
-    HTTPS_PROXY=$SYS_PROXY
-    HTTP_PROXY=$SYS_PROXY
-else
-    if [ -n "$HTTPS_PROXY" ]; then
-        echo "set https_proxy $HTTPS_PROXY"
-        HTTP_PROXY=$HTTPS_PROXY
-        SYS_PROXY=$HTTPS_PROXY
-    else
-        if [ -n "$HTTP_PROXY" ]; then
-            echo "set http_proxy $HTTP_PROXY"
-            HTTPS_PROXY=$HTTP_PROXY
-            SYS_PROXY=$HTTP_PROXY
-        fi
-    fi
-fi
-
+# if [ -n "$SYS_PROXY" ]; then
+#     echo "set sys_proxy $SYS_PROXY"
+#     HTTPS_PROXY=$SYS_PROXY
+#     HTTP_PROXY=$SYS_PROXY
+# else
+#     if [ -n "$HTTPS_PROXY" ]; then
+#         echo "set https_proxy $HTTPS_PROXY"
+#         HTTP_PROXY=$HTTPS_PROXY
+#         SYS_PROXY=$HTTPS_PROXY
+#     else
+#         if [ -n "$HTTP_PROXY" ]; then
+#             echo "set http_proxy $HTTP_PROXY"
+#             HTTPS_PROXY=$HTTP_PROXY
+#             SYS_PROXY=$HTTP_PROXY
+#         fi
+#     fi
+# fi
 # 清空位置参数
 set --
 # 对于每个参数，只有当对应的环境变量有值时才添加
@@ -157,6 +153,6 @@ fi
 if [ -n "$SECRET_KEY_API_SAUCENAO" ]; then
     set -- "$@" "secret.key.apiSauceNAO=$SECRET_KEY_API_SAUCENAO"
 fi
-echo "Starting PixivBiu..."
+echo “Starting PixivBiu...”
 echo "Final command arguments: $@"
 exec sudo -u "#$PUID" -g "#$PGID" "$@" /Pixiv/main

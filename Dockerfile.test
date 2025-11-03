@@ -1,5 +1,5 @@
 # 构建阶段
-FROM python:3.11.14-trixie as builder
+FROM python:3.11.14-trixie AS builder
 # 安装构建依赖
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -43,7 +43,7 @@ RUN apt-get update && \
     rm -rf /PixivBiu/.pkg/dist/config.yml /PixivBiu/.pkg/dist/LICENSE /PixivBiu/.pkg/dist/README.md
 
 # 运行阶段
-FROM debian:stable-slim as main
+FROM debian:stable-slim AS main
 ENV WORKDIR="/Pixiv"
 ENV OUTPUT_DIR="/Pixiv/downloads"
 ENV USER_DIR="/Pixiv/usr"
@@ -78,9 +78,6 @@ COPY --chmod=755 --chown=${PUID}:${PGID} entrypoint.sh /entrypoint.sh
 
 #USER ${USER}
 ENV UMASK=022
-ENV sys.host="0.0.0.0:4001"
-ENV sys.autoOpen=false
-ENV sys.ignoreOutdated=true
 VOLUME $OUTPUT_DIR
 EXPOSE $PORT
 WORKDIR ${WORKDIR}
