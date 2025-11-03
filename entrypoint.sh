@@ -40,4 +40,4 @@ chown -R ${PUID}:${PGID} ${USER_PATH}
 # EOF
 # fi
 
-exec sudo -E -u "#$PUID" -g "#$PGID" /Pixiv/main
+exec sudo sys.host="0.0.0.0:4001" -u "#$PUID" -g "#$PGID" /Pixiv/main
