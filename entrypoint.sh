@@ -40,4 +40,4 @@ chown -R ${PUID}:${PGID} ${USER_PATH}
 # EOF
 # fi
 
-exec sudo -u "#$PUID" -g "#$PGID" /Pixiv/main
+exec sudo -E -u "#$PUID" -g "#$PGID" /Pixiv/main
