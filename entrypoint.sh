@@ -84,64 +84,64 @@ echo "secret.key.apiSauceNAO=$SECRET_KEY_API_SAUCENAO"
 # 如果配置文件不存在，则创建一个新的
 if [ ! -f "$CONFIG_FILE" ]; then
     echo "Creating default config file at $CONFIG_FILE"
-    echo "sys.host:\"${BASE_URI}:${PORT}\"" >> "$CONFIG_FILE"
+    echo "sys.host: \"${BASE_URI}:${PORT}\"" >> "$CONFIG_FILE"
 
     if [ -n "$SYS_DEBUG" ]; then
-        echo "sys.debug:${SYS_DEBUG:-false}" >> "$CONFIG_FILE"
+        echo "sys.debug: ${SYS_DEBUG:-false}" >> "$CONFIG_FILE"
     fi
     if [ -n "$SYS_API_ROUTE" ]; then
-        echo "sys.apiRoute:\"${SYS_API_ROUTE}\"" >> "$CONFIG_FILE"
+        echo "sys.apiRoute: \"${SYS_API_ROUTE}\"" >> "$CONFIG_FILE"
     fi
     if [ -n "$SYS_PROXY" ]; then
-        echo "sys.proxy:\"${SYS_PROXY}\"" >> "$CONFIG_FILE"
+        echo "sys.proxy: \"${SYS_PROXY}\"" >> "$CONFIG_FILE"
     fi
     if [ -n "$SYS_LANGUAGE" ]; then
-        echo "sys.language:\"${SYS_LANGUAGE}\"" >> "$CONFIG_FILE"
+        echo "sys.language: \"${SYS_LANGUAGE}\"" >> "$CONFIG_FILE"
     fi
     if [ -n "$SYS_THEME" ]; then
-        echo "sys.theme:\"${SYS_THEME}\"" >> "$CONFIG_FILE"
+        echo "sys.theme: \"${SYS_THEME}\"" >> "$CONFIG_FILE"
     fi
     if [ -n "$BIU_SEARCH_MAX_THREADS" ]; then
-        echo "biu.search.maxThreads:${BIU_SEARCH_MAX_THREADS:-8}" >> "$CONFIG_FILE"
+        echo "biu.search.maxThreads: ${BIU_SEARCH_MAX_THREADS:-8}" >> "$CONFIG_FILE"
     fi
     if [ -n "$BIU_SEARCH_LOAD_CACHE_FIRST" ]; then
-        echo "biu.search.loadCacheFirst:${BIU_SEARCH_LOAD_CACHE_FIRST:-true}" >> "$CONFIG_FILE"
+        echo "biu.search.loadCacheFirst: ${BIU_SEARCH_LOAD_CACHE_FIRST:-true}" >> "$CONFIG_FILE"
     fi
     if [ -n "$BIU_SEARCH_MAX_CACHE_SIZE_MIB" ]; then
-        echo "biu.search.maxCacheSizeMiB:${BIU_SEARCH_MAX_CACHE_SIZE_MiB:-512}" >> "$CONFIG_FILE"
+        echo "biu.search.maxCacheSizeMiB: ${BIU_SEARCH_MAX_CACHE_SIZE_MiB:-512}" >> "$CONFIG_FILE"
     fi
     if [ -n "$BIU_DOWNLOAD_MODE" ]; then
-        echo "biu.download.mode:\"${BIU_DOWNLOAD_MODE}\"" >> "$CONFIG_FILE"
+        echo "biu.download.mode: \"${BIU_DOWNLOAD_MODE}\"" >> "$CONFIG_FILE"
     fi
     if [ -n "$BIU_DOWNLOAD_ARIA2_HOST" ]; then
-        echo "biu.download.aria2Host:\"${BIU_DOWNLOAD_ARIA2_HOST}\"" >> "$CONFIG_FILE"
+        echo "biu.download.aria2Host: \"${BIU_DOWNLOAD_ARIA2_HOST}\"" >> "$CONFIG_FILE"
     fi
     if [ -n "$BIU_DOWNLOAD_ARIA2_SECRET" ]; then
-        echo "biu.download.aria2Secret:\"${BIU_DOWNLOAD_ARIA2_SECRET}\"" >> "$CONFIG_FILE"
+        echo "biu.download.aria2Secret: \"${BIU_DOWNLOAD_ARIA2_SECRET}\"" >> "$CONFIG_FILE"
     fi
     if [ -n "$BIU_DOWNLOAD_DETER_PATHS" ]; then
-        echo "biu.download.deterPaths:${BIU_DOWNLOAD_DETER_PATHS:-true}" >> "$CONFIG_FILE"
+        echo "biu.download.deterPaths: ${BIU_DOWNLOAD_DETER_PATHS:-true}" >> "$CONFIG_FILE"
     fi
     if [ -n "$BIU_DOWNLOAD_MAX_DOWNLOADING" ]; then
-        echo "biu.download.maxDownloading:${BIU_DOWNLOAD_MAX_DOWNLOADING:-8}" >> "$CONFIG_FILE"
+        echo "biu.download.maxDownloading: ${BIU_DOWNLOAD_MAX_DOWNLOADING:-8}" >> "$CONFIG_FILE"
     fi
     if [ -n "$BIU_DOWNLOAD_SAVE_URI" ]; then
-        echo "biu.download.saveURI:\"${BIU_DOWNLOAD_SAVE_URI}\"" >> "$CONFIG_FILE"
+        echo "biu.download.saveURI: \"${BIU_DOWNLOAD_SAVE_URI}\"" >> "$CONFIG_FILE"
     fi
     if [ -n "$BIU_DOWNLOAD_SAVE_FILE_NAME" ]; then
-        echo "biu.download.saveFileName:\"${BIU_DOWNLOAD_SAVE_FILE_NAME}\"" >> "$CONFIG_FILE"
+        echo "biu.download.saveFileName: \"${BIU_DOWNLOAD_SAVE_FILE_NAME}\"" >> "$CONFIG_FILE"
     fi
     if [ -n "$BIU_DOWNLOAD_AUTO_ARCHIVE" ]; then
-        echo "biu.download.autoArchive:${BIU_DOWNLOAD_AUTO_ARCHIVE:-true}" >> "$CONFIG_FILE"
+        echo "biu.download.autoArchive: ${BIU_DOWNLOAD_AUTO_ARCHIVE:-true}" >> "$CONFIG_FILE"
     fi
     if [ -n "$BIU_DOWNLOAD_WHATS_UGOIRA" ]; then
-        echo "biu.download.whatsUgoira:\"${BIU_DOWNLOAD_WHATS_UGOIRA}\"" >> "$CONFIG_FILE"
+        echo "biu.download.whatsUgoira: \"${BIU_DOWNLOAD_WHATS_UGOIRA}\"" >> "$CONFIG_FILE"
     fi
     if [ -n "$BIU_DOWNLOAD_IMAGE_HOST" ]; then
-        echo "biu.download.imageHost:\"${BIU_DOWNLOAD_IMAGE_HOST}\""  >> "$CONFIG_FILE"
+        echo "biu.download.imageHost: \"${BIU_DOWNLOAD_IMAGE_HOST}\""  >> "$CONFIG_FILE"
     fi
     if [ -n "$SECRET_KEY_API_SAUCENAO" ]; then
-        echo "secret.key.apiSauceNAO:\"${SECRET_KEY_API_SAUCENAO}\"" >> "$CONFIG_FILE"
+        echo "secret.key.apiSauceNAO: \"${SECRET_KEY_API_SAUCENAO}\"" >> "$CONFIG_FILE"
     fi
     chown ${PUID}:${PGID} "$CONFIG_FILE"
     chmod 644 "$CONFIG_FILE"
