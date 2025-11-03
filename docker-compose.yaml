@@ -4,6 +4,8 @@ services:
     #image: ghcr.io/zzcabc/pixivbiu
     image: zzcabc/pixivbiu
     container_name: pixivbiu
+    stdin_open: true
+    tty: true
     restart: unless-stopped
     volumes:
       - 本机路径:/Pixiv/downloads
