@@ -5,12 +5,12 @@
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/txperl/PixivBiu?label=PixivBiu&style=flat-square)](https://github.com/txperl/PixivBiu/releases/latest)[![Docker Image Version (latest by date)](https://img.shields.io/docker/v/zzcabc/pixivbiu?label=Docker&style=flat-square)](https://hub.docker.com/r/zzcabc/pixivbiu/tags?page=1&ordering=last_updated) [![Docker Pulls](https://img.shields.io/docker/pulls/zzcabc/pixivbiu?style=flat-square)](https://hub.docker.com/r/zzcabc/pixivbiu)
 
 
-本项目使用 Docker Buildx 构建全平台镜像，支持 `linux/amd64`、`linux/armv7`、`linux/armv8` 框架，不再对 `linux/386`、`linux/armv6`、`linux/ppc64le`、`linux/s390x` 架构提供支持。
+本项目使用 Docker Buildx 构建全平台镜像，支持 `linux/amd64`、`linux/armv8` 框架，不再对 `linux/386`、`linux/armv6`、`linux/armv7`、`linux/ppc64le`、`linux/s390x` 架构提供支持。
 
 |构建方式|底包采用|amd64 镜像大小|
 |--|--|--|
-|pyinstaller|alpine:latest|39.1M|
-|源码构建|python:alpine3.14|200M|
+|pyinstaller|debian:stable-slim|120M|
+
 
 使用 GitHub Action 在 **UTC+8 00:00** 自动拉取 [txperl/PixivBiu](https://github.com/txperl/PixivBiu) 的源码进行构建 Docker 镜像，**但当源码版本和 Docker 镜像版本一致将不会构建镜像**，总的构建时间大约需要 **30 分钟**。
 
@@ -20,7 +20,7 @@
 
 当上述方法登录无效时，推荐下面方法
 
-1. 取消映射 `-v 本机路径:/Pixiv/usr/.token` token文件
+1. 取消映射 `-v 本机路径:/Pixiv/usr/.token` token文件(非必须)
 2. 将`docker run -d` 改为 `docker run -itd`
 3. 使用`docker start pixivbiu` 启动docker容器
 4. 使用`docker attach pixivbiu` 进入容器
@@ -36,12 +36,12 @@
 |`-e sys.host="0.0.0.0:4001"` |如果你想在 Docker 外访问，请不要传入改环境变量|
 |`-e sys.autoOpen=false`|反正 Docker 内也没提供浏览器窗口，所以这项传了没用|
 |`-e sys.ignoreOutdated=true`|你敢改为`false`，容器就敢不启动|
-|`-e biu.download.saveURI="{ROOTPATH}/downloads/{KT}/"`| 如果不使用 aria2，**`{ROOTPATH}/downloads`是不能修改**|
-|`-e biu.download.saveURI="{ROOTPATH}/downloads/{KT}/"`| 使用 aria2，请**改为对应 aria2 的下载路径**，使用p3terx的Aria2Pro镜像则改为`/downloads` |
+|`-e biu.download.saveURI="{APP_DIRECTORY}/downloads/{KT}/"`| 如果不使用 aria2，**`{APP_DIRECTORY}/downloads`是不能修改**|
+|`-e biu.download.saveURI="{APP_DIRECTORY}/downloads/{KT}/"`| 使用 aria2，请**改为对应 aria2 的下载路径**，使用p3terx的Aria2Pro镜像则改为`/downloads` |
 
 ## pyinstaller 构建镜像的使用方式（默认拉取）
 
-### 国内镜像地址
+### ~~国内镜像地址~~ (我推送不上去)
 
 - 将 `zzcabc/pixivbiu:latest` 换成 `registry.cn-hangzhou.aliyuncs.com/zzcabc/pixivbiu:latest`
 
@@ -98,77 +98,10 @@ docker run -itd \
 ```sh
 docker run -itd \
     --name pixivbiu \
-    --user $(id -u):$(id -g) \
     -p 本机端口:4001 \
     -v 本机路径:/Pixiv/downloads \
     -v 本机路径:/Pixiv/usr/.token \
     zzcabc/pixivbiu
-```
-
-## 源码编译构建镜像的使用方式
-
-### 国内镜像地址
-
-- 将 `zzcabc/pixivbiu:latest-src` 换成 `registry.cn-hangzhou.aliyuncs.com/zzcabc/pixivbiu:latest-src`
-
-```sh
-docker run -itd \
-    --name pixivbiu \
-    --user $(id -u):$(id -g) \
-    -p 本机端口:4001 \
-    -v 本机路径:/Pixiv/config.yml \
-    -v 本机路径:/Pixiv/downloads \
-    -v 本机路径:/Pixiv/usr/.token \
-    zzcabc/pixivbiu:latest-src
-```
-
-### 环境变量
-
-- 具体参照[源码的配置](https://github.com/txperl/PixivBiu/blob/master/app/config/biu_default.yml)
-- 使用了环境变量创建容器，可用不需要传入 `config.yml`
-- 应用的配置优先级为：环境变量 > `config.yml` > 默认
-
-如果你要使用环境变量传配置，请自行修改下方 ` -e ` 中的内容。
-
-```sh
-docker run -itd \
-    --name pixivbiu \
-    --user $(id -u):$(id -g) \
-    -p 本机端口:4001 \
-    -e sys.debug=false \
-    -e sys.apiRoute="direct" \
-    -e sys.proxy="" \
-    -e sys.language="" \
-    -e sys.theme="multiverse" \
-    -e biu.search.maxThreads=8 \
-    -e biu.search.loadCacheFirst=true \
-    -e biu.search.maxCacheSizeMiB=512 \
-    -e biu.download.mode="dl-single" \
-    -e biu.download.aria2Host="localhost:6800" \
-    -e biu.download.aria2Secret="" \
-    -e biu.download.deterPaths=true \
-    -e biu.download.maxDownloading=8 \
-    -e biu.download.saveURI="{ROOTPATH}/downloads/{date_today}/" \
-    -e biu.download.saveFileName="{title}_{work_id}" \
-    -e biu.download.autoArchive=true \
-    -e biu.download.whatsUgoira=webp \
-    -e biu.download.imageHost="" \
-    -e secret.key.apiSauceNAO="" \
-    -v 本机路径:/Pixiv/downloads \
-    -v 本机路径:/Pixiv/usr/.token \
-    zzcabc/pixivbiu:latest-src
-```
-
-### 以默认的配置启动容器
-
-```sh
-docker run -itd \
-    --name pixivbiu \
-    --user $(id -u):$(id -g) \
-    -p 本机端口:4001 \
-    -v 本机路径:/Pixiv/downloads \
-    -v 本机路径:/Pixiv/usr/.token.json \
-    zzcabc/pixivbiu:latest-src
 ```
 
 # 映射路径说明
@@ -177,7 +110,7 @@ docker run -itd \
 
 - `/Pixiv/downloads`: 图片下载地址
 - `/Pixiv/config.yml`: 配置文件（有环境变量即可不用传入）
-- `/Pixiv/usr/.token`: Token 存放位置（必须映射）
+- `/Pixiv/usr/.token`: Token 存放位置
 
 - `{ROOTPATH}` 路径为 容器内`/Pixiv`
 
