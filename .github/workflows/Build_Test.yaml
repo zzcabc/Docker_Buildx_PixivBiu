@@ -80,7 +80,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       # 登录到GitHub Container Registry
-      - name: Login to DockerHub
+      - name: Login to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
