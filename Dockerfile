@@ -1,8 +1,30 @@
-FROM python:3.11-bookworm
-RUN apt-get update && apt-get install -y --no-install-recommends tzdata git gcc build-essential libc-dev libjpeg-dev libffi-dev libxml2-dev libxslt-dev zlib1g-dev libyaml-dev && \
-    apt-get install -y linux-headers-generic || apt-get install -y linux-headers-amd64 || apt-get install -y linux-headers-arm64 || apt-get install -y linux-headers-armhf \
-    && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
-    && echo "Asia/Shanghai" > /etc/timezone && \
+# 构建阶段
+FROM python:3.11.14-trixie AS builder
+# 安装构建依赖
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    tzdata \
+    git \
+    gcc \
+    build-essential \
+    libc-dev \
+    libjpeg-dev \
+    libffi-dev \
+    libxml2-dev \
+    libxslt-dev \
+    zlib1g-dev \
+    libyaml-dev \
+    ca-certificates \
+    libjpeg62-turbo \
+    libffi8 \
+    libxml2 \
+    libxslt1.1 \
+    zlib1g \
+    libyaml-0-2 \
+    sudo && \
+    cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime &&  \
+    echo "Asia/Shanghai" > /etc/timezone && \
+    rm -rf /var/lib/apt/lists/* /tmp/* && \
     git clone --depth=1 https://github.com/txperl/PixivBiu.git && \
     cd /PixivBiu && \
     mkdir ./.pkg/code && \
@@ -13,19 +35,51 @@ RUN apt-get update && apt-get install -y --no-install-recommends tzdata git gcc 
     cp -r ./usr/ ./.pkg/public/usr/ && \
     cp ./app/config/biu_default.yml ./.pkg/public/config.yml && \
     cp ./LICENSE ./.pkg/public/ && \
-    cp ./README.md ./.pkg/public/ && \      
-    pip install -r requirements.txt --no-cache-dir && \
-    pip install pyinstaller --no-cache-dir && \
-    python3 /PixivBiu/.pkg/py-pkger.py auto && \
-    cd / && \
-    mkdir -p /Pixiv && \
-    cp -r /PixivBiu/.pkg/dist/* /Pixiv/  && \
-    rm -rf /PixivBiu /Pixiv/config.yml /Pixiv/LICENSE /Pixiv/README.md && \
-    apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false tzdata git && \
-    rm -rf /var/lib/apt/lists/* && \
-    rm -rf /tmp/*
-EXPOSE 4001
-ENV sys.host="0.0.0.0:4001"
-ENV sys.autoOpen=false
-ENV sys.ignoreOutdated=true
-ENTRYPOINT ["/Pixiv/main"]
+    cp ./README.md ./.pkg/public/ && \
+    pip install -r ./requirements.txt && \
+    pip install pyinstaller && \
+    cd ./.pkg/ && \
+    python ./py-pkger.py auto && \
+    rm -rf /PixivBiu/.pkg/dist/config.yml /PixivBiu/.pkg/dist/LICENSE /PixivBiu/.pkg/dist/README.md
+
+# 运行阶段
+FROM debian:stable-slim AS main
+ENV WORKDIR="/Pixiv"
+ENV OUTPUT_DIR="/Pixiv/downloads"
+ENV USER_DIR="/Pixiv/usr"
+ENV PORT=4001
+ENV TZ=Asia/Shanghai
+ARG USER=pixivbiu
+ARG PUID=1000
+ARG PGID=1000
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    ca-certificates \
+    libjpeg62-turbo \
+    libffi8 \
+    libxml2 \
+    libxslt1.1 \
+    zlib1g \
+    libyaml-0-2 \
+    sudo && \
+    echo 'Defaults !env_reset' >> /etc/sudoers && \
+    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
+    echo $TZ > /etc/timezone && \
+    groupadd -g ${PGID} ${USER} && \
+    useradd -u ${PUID} -g ${PGID} ${USER} && \
+    mkdir -p $OUTPUT_DIR && \
+    chown -R ${PUID}:${PGID} $OUTPUT_DIR && \
+    mkdir -p $USER_DIR && \
+    chown -R ${PUID}:${PGID} $USER_DIR
+
+COPY --from=builder --chmod=755 --chown=${PUID}:${PGID} /PixivBiu/.pkg/dist/ $WORKDIR/
+COPY --chmod=755 --chown=${PUID}:${PGID} entrypoint.sh /entrypoint.sh
+
+#USER ${USER}
+ENV UMASK=022
+VOLUME $OUTPUT_DIR
+EXPOSE $PORT
+WORKDIR ${WORKDIR}
+ENTRYPOINT [ "bash" ]
+CMD [ "/entrypoint.sh" ]

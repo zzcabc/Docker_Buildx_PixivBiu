@@ -90,6 +90,14 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      # 登录到GitHub Container Registry
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.TOKEN_GITHUB }}
+
       # 登录到阿里镜像仓库
       # - name: Login To Alibaba Cloud Container Registry
       #   if: ${{ steps.prepare.outputs.DOCKERHUB_VERSION != steps.prepare.outputs.GITHUB_VERSION }}

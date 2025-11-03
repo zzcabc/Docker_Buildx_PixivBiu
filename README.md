@@ -9,14 +9,14 @@
 
 |构建方式|底包采用|amd64 镜像大小|
 |--|--|--|
-|pyinstaller|debian:stable-slim|120M|
+|pyinstaller|debian:stable-slim|127M|
 
 
 使用 GitHub Action 在 **UTC+8 00:00** 自动拉取 [txperl/PixivBiu](https://github.com/txperl/PixivBiu) 的源码进行构建 Docker 镜像，**但当源码版本和 Docker 镜像版本一致将不会构建镜像**，总的构建时间大约需要 **30 分钟**。
 
 # 使用方式
 
-在启动镜像之前，你需要准备 `.token` 文件用以登录，**请使用客户端获取 .token 文件**。
+~在启动镜像之前，你需要准备 `.token` 文件用以登录，**请使用客户端获取 .token 文件**。~
 
 当上述方法登录无效时，推荐下面方法
 
@@ -43,16 +43,16 @@
 
 ### ~~国内镜像地址~~ (我推送不上去)
 
-- 将 `zzcabc/pixivbiu:latest` 换成 `registry.cn-hangzhou.aliyuncs.com/zzcabc/pixivbiu:latest`
+- 将 `zzcabc/pixivbiu:latest` 换成 `ghcr.io/zzcabc/pixivbiu:latest`
 
 ```sh
 docker run -itd \
     --name pixivbiu \
-    --user $(id -u):$(id -g) \
+    -e PUID=$(id -u) \
+    -e PGID=$(id -g) \
     -p 本机端口:4001 \
-    -v 本机路径:/Pixiv/config.yml \
     -v 本机路径:/Pixiv/downloads \
-    -v 本机路径:/Pixiv/usr/.token \
+    -v 本机路径/.token:/Pixiv/usr/.token \
     zzcabc/pixivbiu
 ```
 
@@ -64,11 +64,13 @@ docker run -itd \
 
 如果你要使用环境变量传配置，请自行修改下方 ` -e ` 中的内容。
 
+**注意：如果你使用代理，请不要使用`HTTPS_PROXY=$HTTPS_PROXY`的形式**
+
 ```sh
 docker run -itd \
     --name pixivbiu \
-    --user $(id -u):$(id -g) \
-    -p 本机端口:4001 \
+    -e PUID=$(id -u) \
+    -e PGID=$(id -g) \
     -e sys.debug=false \
     -e sys.apiRoute="direct" \
     -e sys.proxy="" \
@@ -88,16 +90,6 @@ docker run -itd \
     -e biu.download.whatsUgoira=webp \
     -e biu.download.imageHost="" \
     -e secret.key.apiSauceNAO="" \
-    -v 本机路径:/Pixiv/downloads \
-    -v 本机路径:/Pixiv/usr/.token \
-    zzcabc/pixivbiu
-```
-
-### 以默认的配置启动容器
-
-```sh
-docker run -itd \
-    --name pixivbiu \
     -p 本机端口:4001 \
     -v 本机路径:/Pixiv/downloads \
     -v 本机路径:/Pixiv/usr/.token \
