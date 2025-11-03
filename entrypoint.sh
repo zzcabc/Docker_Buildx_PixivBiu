@@ -1,9 +1,27 @@
 #!/bin/sh
-set -e
 
 DOWNLOAD_PATH=/Pixiv/downloads
 USER_PATH=/Pixiv/usr
 CONFIG_FILE=/Pixiv/config.yml
+
+umask ${UMASK}
+echo "Starting PixivBiu with PUID:PGID ${PUID}:${PGID} and UMASK ${UMASK}"
+
+# 检查并创建用户（如果需要）
+if [ -n "$PUID" ] && [ "$PUID" != "0" ]; then
+    if ! getent passwd "$PUID" >/dev/null 2>&1; then
+        echo "Creating user with PUID: $PUID and PGID: $PGID"
+        if ! getent group "$PGID" >/dev/null 2>&1; then
+            groupadd -g "$PGID" pixivbiugroup
+        fi
+        useradd -u "$PUID" -g "$PGID" -d /Pixiv -s /bin/sh pixivbiuuser
+    fi
+fi
+
+
+set -e
+
+
 
 # 确保目录存在
 mkdir -p ${DOWNLOAD_PATH} ${USER_PATH}
@@ -21,22 +39,5 @@ chown -R ${PUID}:${PGID} ${USER_PATH}
 # sys.ignoreOutdated: true
 # EOF
 # fi
-
-# 设置配置文件权限
-# chown ${PUID}:${PGID} "$CONFIG_FILE"
-
-umask ${UMASK}
-echo "Starting PixivBiu with PUID:PGID ${PUID}:${PGID} and UMASK ${UMASK}"
-
-# 检查并创建用户（如果需要）
-if [ -n "$PUID" ] && [ "$PUID" != "0" ]; then
-    if ! getent passwd "$PUID" >/dev/null 2>&1; then
-        echo "Creating user with PUID: $PUID and PGID: $PGID"
-        if ! getent group "$PGID" >/dev/null 2>&1; then
-            groupadd -g "$PGID" pixivbiugroup
-        fi
-        useradd -u "$PUID" -g "$PGID" -d /Pixiv -s /bin/sh pixivbiuuser
-    fi
-fi
 
 exec sudo -u "#$PUID" -g "#$PGID" /Pixiv/main
