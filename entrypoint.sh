@@ -19,6 +19,10 @@ if [ -n "$PUID" ] && [ "$PUID" != "0" ]; then
         fi
         useradd -u "$PUID" -g "$PGID" -d /Pixiv -s /bin/sh pixivbiuuser
     fi
+else
+    PUID=0
+    PGID=0
+    echo "Running as root user"
 fi
 
 #确保目录存在
@@ -26,9 +30,9 @@ mkdir -p ${DOWNLOAD_PATH} ${USER_PATH}
 echo "Ensured directories ${DOWNLOAD_PATH} and ${USER_PATH} exist"
 
 #设置权限
-chown -R ${PUID}:${PGID} ${DOWNLOAD_PATH}
-chown -R ${PUID}:${PGID} ${USER_PATH}
-echo "Set ownership of ${DOWNLOAD_PATH} and ${USER_PATH} to ${PUID}:${PGID}"
+chown 0777 ${DOWNLOAD_PATH}
+chown 0777 ${USER_PATH}
+echo "Set permissions for ${DOWNLOAD_PATH} and ${USER_PATH}"
 
 get_env() {
     env | grep "^$1=" | cut -d= -f2-
@@ -151,5 +155,6 @@ fi
 if [ -n "$SECRET_KEY_API_SAUCENAO" ]; then
     set -- "$@" "secret.key.apiSauceNAO=$SECRET_KEY_API_SAUCENAO"
 fi
-echo “Starting PixivBiu...”
+echo "Starting PixivBiu..."
+echo "Final command arguments: $@"
 exec sudo -u "#$PUID" -g "#$PGID" "$@" /Pixiv/main
