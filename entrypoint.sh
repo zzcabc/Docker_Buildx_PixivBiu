@@ -30,8 +30,10 @@ mkdir -p ${DOWNLOAD_PATH} ${USER_PATH}
 echo "Ensured directories ${DOWNLOAD_PATH} and ${USER_PATH} exist"
 
 #设置权限
-chown 0777 ${DOWNLOAD_PATH}
-chown 0777 ${USER_PATH}
+chown -R ${PUID}:${PGID} ${DOWNLOAD_PATH}
+chown -R ${PUID}:${PGID} ${USER_PATH}
+chmod -R 755 ${DOWNLOAD_PATH}
+chmod -R 755 ${USER_PATH}
 echo "Set permissions for ${DOWNLOAD_PATH} and ${USER_PATH}"
 
 get_env() {
