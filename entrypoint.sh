@@ -1,6 +1,8 @@
 #!/bin/sh
 set -e
 
+BASE_URI="0.0.0.0"
+PORT=4001
 DOWNLOAD_PATH=/Pixiv/downloads
 USER_PATH=/Pixiv/usr
 CONFIG_FILE=/Pixiv/config.yml
@@ -19,155 +21,135 @@ if [ -n "$PUID" ] && [ "$PUID" != "0" ]; then
     fi
 fi
 
-# 确保目录存在
+#确保目录存在
 mkdir -p ${DOWNLOAD_PATH} ${USER_PATH}
+echo "Ensured directories ${DOWNLOAD_PATH} and ${USER_PATH} exist"
 
-# 设置权限
+#设置权限
 chown -R ${PUID}:${PGID} ${DOWNLOAD_PATH}
 chown -R ${PUID}:${PGID} ${USER_PATH}
+echo "Set ownership of ${DOWNLOAD_PATH} and ${USER_PATH} to ${PUID}:${PGID}"
 
-SYS_DEBUG=$(printenv "sys.debug")
-SYS_HOST=$(printenv "sys.host")
-SYS_API_ROUTE=$(printenv "sys.apiRoute")
-SYS_PROXY=$(printenv "sys.proxy")
-SYS_LANGUAGE=$(printenv "sys.language")
-SYS_THEME=$(printenv "sys.theme")
-BIU_SEARCH_MAX_THREADS=$(printenv "biu.search.maxThreads")
-BIU_SEARCH_LOAD_CACHE_FIRST=$(printenv "biu.search.loadCacheFirst")
-BIU_SEARCH_MAX_CACHE_SIZE_MIB=$(printenv "biu.search.maxCacheSizeMiB")
-BIU_DOWNLOAD_MODE=$(printenv "biu.download.mode")
-BIU_DOWNLOAD_ARIA2_HOST=$(printenv "biu.download.aria2Host")
-BIU_DOWNLOAD_ARIA2_SECRET=$(printenv "biu.download.aria2Secret")
-BIU_DOWNLOAD_DETER_PATHS=$(printenv "biu.download.deterPaths")
-BIU_DOWNLOAD_MAX_DOWNLOADING=$(printenv "biu.download.maxDownloading")
-BIU_DOWNLOAD_SAVE_URI=$(printenv "biu.download.saveURI")
-BIU_DOWNLOAD_SAVE_FILE_NAME=$(printenv "biu.download.saveFileName")
-BIU_DOWNLOAD_AUTO_ARCHIVE=$(printenv "biu.download.autoArchive")
-BIU_DOWNLOAD_WHATS_UGOIRA=$(printenv "biu.download.whatsUgoira")
-BIU_DOWNLOAD_IMAGE_HOST=$(printenv "biu.download.imageHost")
-SECRET_KEY_API_SAUCENAO=$(printenv "secret.key.apiSauceNAO")
+get_env() {
+    env | grep "^$1=" | cut -d= -f2-
+}
+SYS_DEBUG=$(get_env "sys.debug")
+# SYS_HOST=$(get_env "sys.host")
+SYS_API_ROUTE=$(get_env "sys.apiRoute")
+SYS_PROXY=$(get_env "sys.proxy")
+SYS_LANGUAGE=$(get_env "sys.language")
+SYS_THEME=$(get_env "sys.theme")
+BIU_SEARCH_MAX_THREADS=$(get_env "biu.search.maxThreads")
+BIU_SEARCH_LOAD_CACHE_FIRST=$(get_env "biu.search.loadCacheFirst")
+BIU_SEARCH_MAX_CACHE_SIZE_MIB=$(get_env "biu.search.maxCacheSizeMiB")
+BIU_DOWNLOAD_MODE=$(get_env "biu.download.mode")
+BIU_DOWNLOAD_ARIA2_HOST=$(get_env "biu.download.aria2Host")
+BIU_DOWNLOAD_ARIA2_SECRET=$(get_env "biu.download.aria2Secret")
+BIU_DOWNLOAD_DETER_PATHS=$(get_env "biu.download.deterPaths")
+BIU_DOWNLOAD_MAX_DOWNLOADING=$(get_env "biu.download.maxDownloading")
+BIU_DOWNLOAD_SAVE_URI=$(get_env "biu.download.saveURI")
+BIU_DOWNLOAD_SAVE_FILE_NAME=$(get_env "biu.download.saveFileName")
+BIU_DOWNLOAD_AUTO_ARCHIVE=$(get_env "biu.download.autoArchive")
+BIU_DOWNLOAD_WHATS_UGOIRA=$(get_env "biu.download.whatsUgoira")
+BIU_DOWNLOAD_IMAGE_HOST=$(get_env "biu.download.imageHost")
+SECRET_KEY_API_SAUCENAO=$(get_env "secret.key.apiSauceNAO")
+echo "Ready to start PixivBiu with environment variable configurations."
 
-
-if [ -n "$HTTP_PROXY" ]; then
-    echo "设置HTTP代理为 $HTTP_PROXY"
-    export http_proxy=$HTTP_PROXY
-    export https_proxy=$HTTP_PROXY
-    if [ -n "$SYS_PROXY" ]; then
-        
-    else
-        SYS_PROXY=$HTTP_PROXY
-    fi
+if [ -n "$SYS_PROXY" ]; then
+    echo "set sys_proxy $SYS_PROXY"
+    HTTPS_PROXY=$SYS_PROXY
+    HTTP_PROXY=$SYS_PROXY
 else
     if [ -n "$HTTPS_PROXY" ]; then
-        echo "设置HTTPS代理为 $HTTPS_PROXY"
-        export http_proxy=$HTTPS_PROXY
-        export https_proxy=$HTTPS_PROXY
-        if [ -n "$SYS_PROXY" ]; then
-            
-        else
-            SYS_PROXY=$HTTPS_PROXY
+        echo "set https_proxy $HTTPS_PROXY"
+        HTTP_PROXY=$HTTPS_PROXY
+        SYS_PROXY=$HTTPS_PROXY
+    else
+        if [ -n "$HTTP_PROXY" ]; then
+            echo "set http_proxy $HTTP_PROXY"
+            HTTPS_PROXY=$HTTP_PROXY
+            SYS_PROXY=$HTTP_PROXY
         fi
     fi
 fi
 
-args=()
-
-# 处理 sys.host
-if [ -n "$PROT" ]; then
-    args+=("sys.host=0.0.0.0:$PROT")
+# 清空位置参数
+set --
+# 对于每个参数，只有当对应的环境变量有值时才添加
+if [ -n "$PORT" ]; then
+    set -- "$@" "sys.host=$BASE_URI:$PORT"
 fi
 
-# 处理 sys.apiRoute
 if [ -n "$SYS_API_ROUTE" ]; then
-    args+=("sys.apiRoute=$SYS_API_ROUTE")
+    set -- "$@" "sys.apiRoute=$SYS_API_ROUTE"
 fi
 
-# 处理 sys.proxy
 if [ -n "$SYS_PROXY" ]; then
-    args+=("sys.proxy=$SYS_PROXY")
+    set -- "$@" "sys.proxy=$SYS_PROXY"
 fi
 
-# 处理 sys.language
 if [ -n "$SYS_LANGUAGE" ]; then
-    args+=("sys.language=$SYS_LANGUAGE")
+    set -- "$@" "sys.language=$SYS_LANGUAGE"
 fi
 
-# 处理 sys.theme
 if [ -n "$SYS_THEME" ]; then
-    args+=("sys.theme=$SYS_THEME")
+    set -- "$@" "sys.theme=$SYS_THEME"
 fi
 
-# 处理 biu.search.maxThreads
 if [ -n "$BIU_SEARCH_MAX_THREADS" ]; then
-    args+=("biu.search.maxThreads=$BIU_SEARCH_MAX_THREADS")
+    set -- "$@" "biu.search.maxThreads=$BIU_SEARCH_MAX_THREADS"
 fi
 
-# 处理 biu.search.loadCacheFirst
 if [ -n "$BIU_SEARCH_LOAD_CACHE_FIRST" ]; then
-    args+=("biu.search.loadCacheFirst=$BIU_SEARCH_LOAD_CACHE_FIRST")
+    set -- "$@" "biu.search.loadCacheFirst=$BIU_SEARCH_LOAD_CACHE_FIRST"
 fi
 
-# 处理 biu.search.maxCacheSizeMiB
 if [ -n "$BIU_SEARCH_MAX_CACHE_SIZE_MIB" ]; then
-    args+=("biu.search.maxCacheSizeMiB=$BIU_SEARCH_MAX_CACHE_SIZE_MIB")
+    set -- "$@" "biu.search.maxCacheSizeMiB=$BIU_SEARCH_MAX_CACHE_SIZE_MIB"
 fi
 
-# 处理 biu.download.mode
 if [ -n "$BIU_DOWNLOAD_MODE" ]; then
-    args+=("biu.download.mode=$BIU_DOWNLOAD_MODE")
+    set -- "$@" "biu.download.mode=$BIU_DOWNLOAD_MODE"
 fi
 
-# 处理 biu.download.aria2Host
 if [ -n "$BIU_DOWNLOAD_ARIA2_HOST" ]; then
-    args+=("biu.download.aria2Host=$BIU_DOWNLOAD_ARIA2_HOST")
+    set -- "$@" "biu.download.aria2Host=$BIU_DOWNLOAD_ARIA2_HOST"
 fi
 
-# 处理 biu.download.aria2Secret
 if [ -n "$BIU_DOWNLOAD_ARIA2_SECRET" ]; then
-    args+=("biu.download.aria2Secret=$BIU_DOWNLOAD_ARIA2_SECRET")
+    set -- "$@" "biu.download.aria2Secret=$BIU_DOWNLOAD_ARIA2_SECRET"
 fi
 
-# 处理 biu.download.deterPaths
 if [ -n "$BIU_DOWNLOAD_DETER_PATHS" ]; then
-    args+=("biu.download.deterPaths=$BIU_DOWNLOAD_DETER_PATHS")
+    set -- "$@" "biu.download.deterPaths=$BIU_DOWNLOAD_DETER_PATHS"
 fi
 
-# 处理 biu.download.maxDownloading
 if [ -n "$BIU_DOWNLOAD_MAX_DOWNLOADING" ]; then
-    args+=("biu.download.maxDownloading=$BIU_DOWNLOAD_MAX_DOWNLOADING")
+    set -- "$@" "biu.download.maxDownloading=$BIU_DOWNLOAD_MAX_DOWNLOADING"
 fi
 
-# 处理 biu.download.saveURI
 if [ -n "$BIU_DOWNLOAD_SAVE_URI" ]; then
-    args+=("biu.download.saveURI=$BIU_DOWNLOAD_SAVE_URI")
+    set -- "$@" "biu.download.saveURI=$BIU_DOWNLOAD_SAVE_URI"
 fi
 
-# 处理 biu.download.saveFileName
 if [ -n "$BIU_DOWNLOAD_SAVE_FILE_NAME" ]; then
-    args+=("biu.download.saveFileName=$BIU_DOWNLOAD_SAVE_FILE_NAME")
+    set -- "$@" "biu.download.saveFileName=$BIU_DOWNLOAD_SAVE_FILE_NAME"
 fi
 
-# 处理 biu.download.autoArchive
 if [ -n "$BIU_DOWNLOAD_AUTO_ARCHIVE" ]; then
-    args+=("biu.download.autoArchive=$BIU_DOWNLOAD_AUTO_ARCHIVE")
+    set -- "$@" "biu.download.autoArchive=$BIU_DOWNLOAD_AUTO_ARCHIVE"
 fi
 
-# 处理 biu.download.whatsUgoira
 if [ -n "$BIU_DOWNLOAD_WHATS_UGOIRA" ]; then
-    args+=("biu.download.whatsUgoira=$BIU_DOWNLOAD_WHATS_UGOIRA")
+    set -- "$@" "biu.download.whatsUgoira=$BIU_DOWNLOAD_WHATS_UGOIRA"
 fi
 
-# 处理 biu.download.imageHost
 if [ -n "$BIU_DOWNLOAD_IMAGE_HOST" ]; then
-    args+=("biu.download.imageHost=$BIU_DOWNLOAD_IMAGE_HOST")
+    set -- "$@" "biu.download.imageHost=$BIU_DOWNLOAD_IMAGE_HOST"
 fi
 
-# 处理 secret.key.apiSauceNAO
 if [ -n "$SECRET_KEY_API_SAUCENAO" ]; then
-    args+=("secret.key.apiSauceNAO=$SECRET_KEY_API_SAUCENAO")
+    set -- "$@" "secret.key.apiSauceNAO=$SECRET_KEY_API_SAUCENAO"
 fi
-
-# 然后执行命令
-exec sudo -u "#$PUID" -g "#$PGID" \
-    "${args[@]}" \
-    /Pixiv/main
+echo “Starting PixivBiu...”
+exec sudo -u "#$PUID" -g "#$PGID" "$@" /Pixiv/main
