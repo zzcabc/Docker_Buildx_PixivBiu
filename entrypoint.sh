@@ -153,6 +153,6 @@ fi
 if [ -n "$SECRET_KEY_API_SAUCENAO" ]; then
     set -- "$@" "secret.key.apiSauceNAO=$SECRET_KEY_API_SAUCENAO"
 fi
-echo “Starting PixivBiu...”
+echo "Starting PixivBiu..."
 echo "Final command arguments: $@"
 exec sudo -u "#$PUID" -g "#$PGID" "$@" /Pixiv/main
