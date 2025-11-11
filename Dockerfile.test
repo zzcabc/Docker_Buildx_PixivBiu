@@ -49,10 +49,8 @@ ENV OUTPUT_DIR="/Pixiv/downloads"
 ENV USER_DIR="/Pixiv/usr"
 ENV PORT=4001
 ENV TZ=Asia/Shanghai
-ARG USER=pixivbiu
-ARG PUID=1000
-ARG PGID=1000
 
+# 安装必要的包，包括sudo用于用户切换
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
     ca-certificates \
@@ -66,20 +64,20 @@ RUN apt-get update && \
     echo 'Defaults !env_reset' >> /etc/sudoers && \
     ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
     echo $TZ > /etc/timezone && \
-    groupadd -g ${PGID} ${USER} && \
-    useradd -u ${PUID} -g ${PGID} ${USER} && \
-    mkdir -p $OUTPUT_DIR && \
-    chown -R ${PUID}:${PGID} $OUTPUT_DIR && \
-    mkdir -p $USER_DIR && \
-    chown -R ${PUID}:${PGID} $USER_DIR
+    rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder --chmod=755 --chown=${PUID}:${PGID} /PixivBiu/.pkg/dist/ $WORKDIR/
-COPY --chmod=755 --chown=${PUID}:${PGID} entrypoint.sh /entrypoint.sh
+# 创建必要的目录（不设置固定用户权限）
+RUN mkdir -p $OUTPUT_DIR $USER_DIR $WORKDIR
 
-#USER ${USER}
+# 复制文件（保持root权限，entrypoint.sh会处理权限）
+COPY --from=builder --chmod=755 /PixivBiu/.pkg/dist/ $WORKDIR/
+COPY --chmod=755 entrypoint.sh /entrypoint.sh
+
+
 ENV UMASK=022
+ENV PUID=0
+ENV PGID=0
 VOLUME $OUTPUT_DIR
 EXPOSE $PORT
 WORKDIR ${WORKDIR}
-ENTRYPOINT [ "bash" ]
-CMD [ "/entrypoint.sh" ]
+ENTRYPOINT [ "/entrypoint.sh" ]
