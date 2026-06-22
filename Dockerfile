@@ -1,85 +1,36 @@
-# 构建阶段
-FROM python:3.11.14-trixie AS builder
-# 安装构建依赖
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    tzdata \
-    git \
-    gcc \
-    build-essential \
-    libc-dev \
-    libjpeg-dev \
-    libffi-dev \
-    libxml2-dev \
-    libxslt-dev \
-    zlib1g-dev \
-    libyaml-dev \
-    ca-certificates \
-    libjpeg62-turbo \
-    libffi8 \
-    libxml2 \
-    libxslt1.1 \
-    zlib1g \
-    libyaml-0-2 \
-    sudo && \
+# 运行阶段
+FROM alpine
+ENV WORKDIR="/Pixiv" \
+    OUTPUT_DIR="/Pixiv/downloads" \
+    USER_DIR="/Pixiv/usr" \
+    PIXIVBIU_SERVER_HOST="0.0.0.0" \
+    PIXIVBIU_SERVER_PORT=4001 \
+    TZ=Asia/Shanghai \
+    UMASK=022 \
+    PUID=0 \
+    PGID=0
+
+# 安装必要的包，包括sudo用于用户切换
+RUN mkdir -p $OUTPUT_DIR $USER_DIR $WORKDIR &&\
+    apk add --no-cache wget tzdata su-exec &&\
     cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime &&  \
     echo "Asia/Shanghai" > /etc/timezone && \
-    rm -rf /var/lib/apt/lists/* /tmp/* && \
-    git clone --depth=1 https://github.com/txperl/PixivBiu.git && \
-    cd /PixivBiu && \
-    mkdir ./.pkg/code && \
-    mkdir ./.pkg/public && \
-    cp -r ./altfe/ ./.pkg/code/altfe/ && \
-    cp -r ./app/ ./.pkg/code/app/ && \
-    cp ./main.py ./.pkg/code/ && \
-    cp -r ./usr/ ./.pkg/public/usr/ && \
-    cp ./app/config/biu_default.yml ./.pkg/public/config.yml && \
-    cp ./LICENSE ./.pkg/public/ && \
-    cp ./README.md ./.pkg/public/ && \
-    pip install -r ./requirements.txt && \
-    pip install pyinstaller && \
-    cd ./.pkg/ && \
-    python ./py-pkger.py auto && \
-    rm -rf /PixivBiu/.pkg/dist/config.yml /PixivBiu/.pkg/dist/LICENSE /PixivBiu/.pkg/dist/README.md
+    HOST_ARCH=$(uname -m); \
+    case "${HOST_ARCH}" in \
+        x86_64)  ARCH="amd64" ;; \
+        aarch64) ARCH="arm64" ;; \
+        *) echo "Unsupported architecture: ${HOST_ARCH}"; exit 1 ;; \
+    esac; \
+    GITHUB_VERSION=$(wget -qO- "https://api.github.com/repos/txperl/PixivBiu/releases/latest" | awk -F'"' '/tag_name/{print $4}') && \
+    VERSION=$(echo $GITHUB_VERSION | sed 's/^v//') && \
+    wget https://github.com/txperl/PixivBiu/releases/download/${GITHUB_VERSION}/PixivBiu_${VERSION}_linux_${ARCH}.tar.gz && \
+    tar -xzf PixivBiu_${VERSION}_linux_${ARCH}.tar.gz -C $WORKDIR && \
+    rm PixivBiu_${VERSION}_linux_${ARCH}.tar.gz
 
-# 运行阶段
-FROM debian:stable-slim AS main
-ENV WORKDIR="/Pixiv"
-ENV OUTPUT_DIR="/Pixiv/downloads"
-ENV USER_DIR="/Pixiv/usr"
-ENV PORT=4001
-ENV TZ=Asia/Shanghai
-ARG USER=pixivbiu
-ARG PUID=1000
-ARG PGID=1000
-
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    ca-certificates \
-    libjpeg62-turbo \
-    libffi8 \
-    libxml2 \
-    libxslt1.1 \
-    zlib1g \
-    libyaml-0-2 \
-    sudo && \
-    echo 'Defaults !env_reset' >> /etc/sudoers && \
-    ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && \
-    echo $TZ > /etc/timezone && \
-    groupadd -g ${PGID} ${USER} && \
-    useradd -u ${PUID} -g ${PGID} ${USER} && \
-    mkdir -p $OUTPUT_DIR && \
-    chown -R ${PUID}:${PGID} $OUTPUT_DIR && \
-    mkdir -p $USER_DIR && \
-    chown -R ${PUID}:${PGID} $USER_DIR
-
-COPY --from=builder --chmod=755 --chown=${PUID}:${PGID} /PixivBiu/.pkg/dist/ $WORKDIR/
 COPY --chmod=755 --chown=${PUID}:${PGID} entrypoint.sh /entrypoint.sh
 
-#USER ${USER}
-ENV UMASK=022
+
 VOLUME $OUTPUT_DIR
-EXPOSE $PORT
+EXPOSE $PIXIVBIU_SERVER_PORT
 WORKDIR ${WORKDIR}
-ENTRYPOINT [ "bash" ]
-CMD [ "/entrypoint.sh" ]
+ENTRYPOINT [ "/entrypoint.sh" ]

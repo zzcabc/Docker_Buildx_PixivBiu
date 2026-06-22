@@ -49,29 +49,21 @@ jobs:
         # ALI_LATEST :
         run: |
           IMAGE_NAME=pixivbiu
+          GHCR_ADD=ghcr.io
           GITHUB_VERSION=$(curl -sX GET "https://api.github.com/repos/txperl/PixivBiu/releases/latest" | awk '/tag_name/{print $4;exit}' FS='[""]')
           DOCKERHUB_VERSION=$(cat currentVersion)
           echo ${GITHUB_VERSION}
           echo ${DOCKERHUB_VERSION}
-          echo "GITHUB_VERSION=$GITHUB_VERSION" >> $GITHUB_OUTPUT
-          echo "DOCKERHUB_VERSION=$DOCKERHUB_VERSION" >> $GITHUB_OUTPUT
-
           TAG_VERSION="${{ secrets.DOCKERHUB_USERNAME }}/${IMAGE_NAME}:${GITHUB_VERSION}"
           TAG_LATEST="${{ secrets.DOCKERHUB_USERNAME }}/${IMAGE_NAME}:latest"
-          echo "TAG_VERSION=$TAG_VERSION" >> $GITHUB_OUTPUT
-          echo "TAG_LATEST=$TAG_LATEST" >> $GITHUB_OUTPUT
-
-          GHCR_ADD=ghcr.io
           GHCR_VERSION="${GHCR_ADD}/${{ secrets.DOCKERHUB_USERNAME }}/${IMAGE_NAME}:${GITHUB_VERSION}"
           GHCR_LATEST="${GHCR_ADD}/${{ secrets.DOCKERHUB_USERNAME }}/${IMAGE_NAME}:latest"
+          echo "GITHUB_VERSION=$GITHUB_VERSION" >> $GITHUB_OUTPUT
+          echo "DOCKERHUB_VERSION=$DOCKERHUB_VERSION" >> $GITHUB_OUTPUT
+          echo "TAG_VERSION=$TAG_VERSION" >> $GITHUB_OUTPUT
+          echo "TAG_LATEST=$TAG_LATEST" >> $GITHUB_OUTPUT
           echo "GHCR_VERSION=$GHCR_VERSION" >> $GITHUB_OUTPUT
           echo "GHCR_LATEST=$GHCR_LATEST" >> $GITHUB_OUTPUT
-
-          ALI_ADD=registry.cn-hangzhou.aliyuncs.com
-          ALI_VERSION="${ALI_ADD}/${{ secrets.ALIYUN_NAMESPACES }}/${IMAGE_NAME}:${GITHUB_VERSION}"
-          ALI_LATEST="${ALI_ADD}/${{ secrets.ALIYUN_NAMESPACES }}/${IMAGE_NAME}:latest"
-          echo "ALI_VERSION=$ALI_VERSION" >> $GITHUB_OUTPUT
-          echo "ALI_LATEST=$ALI_LATEST" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
         if: ${{ steps.prepare.outputs.DOCKERHUB_VERSION != steps.prepare.outputs.GITHUB_VERSION }}
@@ -92,24 +84,19 @@ jobs:
 
       # 登录到GitHub Container Registry
       - name: Login to GHCR
+        if: ${{ steps.prepare.outputs.DOCKERHUB_VERSION != steps.prepare.outputs.GITHUB_VERSION }}
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.TOKEN_GITHUB }}
 
-      # 登录到阿里镜像仓库
-      # - name: Login To Alibaba Cloud Container Registry
-      #   if: ${{ steps.prepare.outputs.DOCKERHUB_VERSION != steps.prepare.outputs.GITHUB_VERSION }}
-      #   run: |
-      #     docker login -u ${{ secrets.ALIYUN_USERNAME }} -p ${{ secrets.ALIYUN_PWD }} registry.cn-hangzhou.aliyuncs.com
-
       # 构建并且推送
-      - name: BuildPyinstaller and Push
+      - name: Build and Push
         if: ${{ steps.prepare.outputs.DOCKERHUB_VERSION != steps.prepare.outputs.GITHUB_VERSION }}
         uses: docker/build-push-action@v6
         with:
-          platforms: linux/amd64,linux/arm64/v8
+          platforms: linux/amd64
           file: ./Dockerfile
           context: .
           push: true
@@ -118,30 +105,3 @@ jobs:
             ${{ steps.prepare.outputs.TAG_LATEST }}
             ${{ steps.prepare.outputs.GHCR_VERSION }}
             ${{ steps.prepare.outputs.GHCR_LATEST }}
-      
-      # 初始化版本号与git 
-      - name: commit
-        if: ${{ steps.prepare.outputs.DOCKERHUB_VERSION != steps.prepare.outputs.GITHUB_VERSION }}
-        run: |
-          echo "${{ steps.prepare.outputs.GITHUB_VERSION }}" > currentVersion
-          git config --global user.name zhaocheng
-          git config --global user.email zhaocheng990105@gmail.com
-          git add currentVersion
-          git commit -m "当前版本是:${{ steps.prepare.outputs.GITHUB_VERSION }}" -a
-      
-      # 推送版本号到GitHub 
-      - name: Push changes
-        if: ${{ steps.prepare.outputs.DOCKERHUB_VERSION != steps.prepare.outputs.GITHUB_VERSION }}
-        uses: ad-m/github-push-action@master
-        with:
-          github_token: ${{ secrets.TOKEN_GITHUB }}
-
-      # - name: Update DockerHub Description
-      #   uses: christian-korneck/update-container-description-action@v1
-      #   env:
-      #     DOCKER_USER: ${{ secrets.DOCKERHUB_USERNAME }}
-      #     DOCKER_PASS: ${{ secrets.DOCKERHUB_PASSWORD }}
-      #   with:
-      #     destination_container_repo: ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}
-      #     provider: dockerhub
-      #     readme_file: ./README.md
