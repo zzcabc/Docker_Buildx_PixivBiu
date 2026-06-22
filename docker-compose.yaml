@@ -9,14 +9,12 @@ services:
     restart: unless-stopped
     volumes:
       - 本机路径:/Pixiv/downloads
-      - 本机路径/.token:/Pixiv/usr/.token
     ports:
       - 4001:4001
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=Asia/Shanghai
-      #- sys.proxy=""
     logging:
       driver: "json-file"
       options:
