@@ -23,7 +23,7 @@ RUN mkdir -p $OUTPUT_DIR $USER_DIR $WORKDIR &&\
     esac; \
     GITHUB_VERSION=$(wget -qO- "https://api.github.com/repos/txperl/PixivBiu/releases/latest" | awk -F'"' '/tag_name/{print $4}') && \
     VERSION=$(echo $GITHUB_VERSION | sed 's/^v//') && \
-    wget https://github.com/txperl/PixivBiu/releases/download/${GITHUB_VERSION}/PixivBiu_${VERSION}_linux_${HOST_ARCH}.tar.gz && \
+    wget https://github.com/txperl/PixivBiu/releases/download/${GITHUB_VERSION}/PixivBiu_${VERSION}_linux_${ARCH}.tar.gz && \
     tar -xzf PixivBiu_${VERSION}_linux_${HOST_ARCH}.tar.gz -C $WORKDIR && \
     rm PixivBiu_${VERSION}_linux_${HOST_ARCH}.tar.gz
 
